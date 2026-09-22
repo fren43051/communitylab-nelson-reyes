@@ -1,9 +1,5 @@
-"""
-Construccion del grafo LangGraph para CommunityLab.
-Flujo: analizar -> (bifurcacion condicional) -> generar_caso_exito / generar_faq -> consolidar -> guardar_oci
-"""
+"""Construccion del grafo LangGraph para CommunityLab."""
 from langgraph.graph import StateGraph, START, END
-
 from src.graph.state import CommunityLabState
 from src.graph.nodes import (
     nodo_analizar, nodo_generar_caso_exito, nodo_generar_faq,
@@ -13,7 +9,6 @@ from src.graph.nodes import (
 
 def construir_grafo():
     grafo = StateGraph(CommunityLabState)
-
     grafo.add_node("analizar", nodo_analizar)
     grafo.add_node("generar_caso_exito", nodo_generar_caso_exito)
     grafo.add_node("generar_faq", nodo_generar_faq)
@@ -26,9 +21,8 @@ def construir_grafo():
         "generar_faq": "generar_faq",
         "consolidar": "consolidar",
     })
-    grafo.add_edge("generar_caso_exito", "generar_faq")
+    grafo.add_edge("generar_caso_exito", "consolidar")
     grafo.add_edge("generar_faq", "consolidar")
     grafo.add_edge("consolidar", "guardar_oci")
     grafo.add_edge("guardar_oci", END)
-
     return grafo.compile()
