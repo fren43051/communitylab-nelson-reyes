@@ -79,15 +79,22 @@ Los activos generados se asignaban como diccionarios (`.model_dump()`) a campos 
 ### 4.6 Exposición accidental de credencial
 Durante las pruebas de integración con Gemini se pegó accidentalmente una API key real en el flujo de trabajo. **Acción inmediata:** revocación de la credencial en Google AI Studio y generación de una nueva antes de continuar. **Lección para el equipo:** las credenciales deben configurarse únicamente en archivos `.env` locales (excluidos del control de versiones vía `.gitignore`) y nunca compartirse en texto plano en ningún canal.
 
+### 4.7 Resolución de importación en Streamlit (`ModuleNotFoundError: No module named 'src'`)
+Al ejecutar el panel interactivo mediante `streamlit run app/streamlit_app.py`, Streamlit establece el directorio de trabajo o el contexto de ejecución en `app/`, lo que provocaba que las importaciones absolutas del paquete raíz `src` fallaran. **Resolución:** se incorporó la resolución dinámica del directorio raíz del proyecto mediante `Path(__file__).resolve().parent.parent` y su inyección en `sys.path.insert(0, ...)` al inicio del script `app/streamlit_app.py`.
+
+### 4.8 Incorporación del flujo de curaduría y revisión humana (Human-in-the-loop)
+Se integró el modelo `HumanReviewControl` en el paquete de distribución (`PaqueteDistribucion`), permitiendo que el curador humano apruebe o rechace los activos generados, agregue comentarios de feedback e incremente el número de revisión, persistiendo automáticamente el estado actualizado tanto en la interfaz de Streamlit como en OCI Object Storage.
+
 ## 5. Validación end-to-end
 
-Tras aplicar las correcciones anteriores, se ejecutó el pipeline completo (`python main.py`) contra el lote de datos de ejemplo, confirmando:
+Tras aplicar las correcciones anteriores, se ejecutó el pipeline completo (`python main.py` y `streamlit run app/streamlit_app.py`) contra el lote de datos de ejemplo, confirmando:
 
 - Aislamiento correcto de 1 registro inválido (texto vacío) de un total de 7, sin bloquear el procesamiento de los 6 restantes.
-- Análisis de sentimiento y categorización exitoso vía Anthropic Claude.
+- Análisis de sentimiento y categorización exitoso vía Anthropic Claude (y configurable con Gemini u OpenAI).
 - Generación simultánea de post LinkedIn, resumen de newsletter y sugerencia de FAQ, cada uno con `source_ids` trazables.
 - Detección de una alerta de soporte sobre un registro con dificultad técnica no resuelta.
 - Persistencia exitosa en OCI Object Storage con verificación de lectura confirmada (`comprobacion_lectura: true`).
+- Panel interactivo en Streamlit funcional con métricas en tiempo real, edición de copys y módulo de aprobación/rechazo humano.
 
 ## 6. Estado frente al checklist del hackathon
 
@@ -98,6 +105,7 @@ Tras aplicar las correcciones anteriores, se ejecutó el pipeline completo (`pyt
 | Generación de al menos 2 formatos de activos de marketing | ✅ Cumplido (LinkedIn + newsletter + FAQ) |
 | Orquestación con LangGraph/Python | ✅ Cumplido, con bifurcación condicional validada |
 | Integración con OCI Object Storage (Always Free) | ✅ Cumplido, con verificación de lectura |
+| Panel Streamlit con control de revisión humana | ✅ Cumplido (aprobación/rechazo, trazabilidad y edición) |
 | Mínimo 3 ejemplos de transformación demostrados | ✅ Cumplido |
 | Repositorio en GitHub con documentación | ✅ Cumplido |
 
@@ -105,4 +113,4 @@ Tras aplicar las correcciones anteriores, se ejecutó el pipeline completo (`pyt
 
 - Explorar despliegue en OCI Compute Instance (Always Free) como diferencial.
 - Evaluar integración de un webhook real (Discord/Slack) para ingesta en tiempo real.
-- Ampliar el panel Streamlit con historial de revisión humana (aprobaciones, comentarios, versión de revisión).
+- Incorporar generación de banners o creatividades gráficas multimodales para los posts generados.

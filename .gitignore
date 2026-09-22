@@ -20,6 +20,8 @@ ENV/
 # IDEs y editores
 .idea/
 .vscode/
+.agents/
+.claude/
 *.swp
 *.swo
 *~
