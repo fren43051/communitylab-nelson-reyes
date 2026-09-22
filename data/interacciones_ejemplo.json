@@ -1,0 +1,42 @@
+{
+  "origen_comunidad": "Discord_Grupo_ONE_G10",
+  "periodo_referencia": "Semana_04",
+  "interacciones": [
+    {
+      "autor": "Mariana Souza",
+      "canal": "#logros-y-empleos",
+      "tipo": "testimonio",
+      "texto": "Comunidad, quede seleccionada para el puesto de Desarrolladora Junior de IA! El proyecto del curso de LangChain y OCI que construi en mi portfolio marco toda la diferencia en la entrevista tecnica. Muy agradecida con la comunidad por todo el apoyo!"
+    },
+    {
+      "autor": "Lucas Albuquerque",
+      "canal": "#dudas-langgraph",
+      "tipo": "pregunta_tecnica",
+      "texto": "Tengo dudas sobre como estructurar los nodos condicionales en LangGraph cuando la respuesta del LLM necesita reintento. Alguien tiene un ejemplo practico de router?"
+    },
+    {
+      "autor": "Fernanda Costa",
+      "canal": "#logros-y-empleos",
+      "tipo": "testimonio",
+      "texto": "Termine mi certificacion de RAG Avanzado y ya estoy aplicando lo aprendido en un proyecto freelance de chatbots para una pyme. Gracias equipo ONE!"
+    },
+    {
+      "autor": "Pedro Alvarez",
+      "canal": "#soporte-general",
+      "tipo": "pregunta_tecnica",
+      "texto": "Como configuro el bucket Always Free de OCI Object Storage desde Python? Me da error de autenticacion con el config file."
+    },
+    {
+      "autor": "Julia Mendes",
+      "canal": "#feedback-cursos",
+      "tipo": "feedback",
+      "texto": "El modulo de RAG estuvo excelente pero senti que faltaron mas ejemplos practicos de chunking para documentos grandes."
+    },
+    {
+      "autor": "Carlos Rivas",
+      "canal": "#dudas-langgraph",
+      "tipo": "pregunta_tecnica",
+      "texto": "Vuelvo a preguntar sobre nodos condicionales en LangGraph, ya varios compañeros preguntaron lo mismo esta semana, seria bueno un tutorial."
+    }
+  ]
+}
