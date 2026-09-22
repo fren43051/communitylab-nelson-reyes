@@ -5,6 +5,9 @@ InvalidUpdateError cuando generar_caso_exito y generar_faq corren en paralelo
 dentro del mismo superstep (ambos escribirian 'lote' sin cambios si se
 devolviera el state entero). 'activos_generados' usa reducer operator.add
 en state.py para concatenar las listas devueltas por ambos nodos.
+
+Los activos se asignan como objetos Pydantic tipados (no dicts via model_dump)
+para evitar PydanticSerializationUnexpectedValue al serializar el paquete final.
 """
 import json
 import time
@@ -15,6 +18,7 @@ from src.graph.llm_provider import get_llm
 from src.ingestion.models import (
     AnalisisInteraccion, PuntuacionRelevancia, ResumenComunidad, ActivosDistribucion,
     PostLinkedIn, DestaqueNewsletter, SugerenciaFAQ, PaqueteDistribucion, MetadatosEjecucion,
+    AlmacenamientoOCI,
 )
 from src.prompts.canal_prompts import (
     PROMPT_ANALISIS, PROMPT_LINKEDIN, PROMPT_NEWSLETTER, PROMPT_FAQ,
@@ -78,8 +82,8 @@ def nodo_generar_caso_exito(state: CommunityLabState) -> dict:
     newsletter["source_ids"] = [mejor.id]
 
     return {"activos_generados": [
-        {"post_linkedin": PostLinkedIn(**linkedin).model_dump()},
-        {"destaque_newsletter_semanal": DestaqueNewsletter(**newsletter).model_dump()},
+        {"post_linkedin": PostLinkedIn(**linkedin)},
+        {"destaque_newsletter_semanal": DestaqueNewsletter(**newsletter)},
     ]}
 
 
@@ -97,7 +101,7 @@ def nodo_generar_faq(state: CommunityLabState) -> dict:
     faq["status"] = _forzar_string(faq.get("status"), fallback="derivado_a_mentoria")
     faq["source_ids"] = [mejor.id]
 
-    return {"activos_generados": [{"sugerencia_contenido_faq": SugerenciaFAQ(**faq).model_dump()}]}
+    return {"activos_generados": [{"sugerencia_contenido_faq": SugerenciaFAQ(**faq)}]}
 
 
 def enrutar_categorias(state: CommunityLabState) -> list[str]:
@@ -121,7 +125,7 @@ def nodo_consolidar(state: CommunityLabState) -> dict:
     activos = ActivosDistribucion()
     for item in state.get("activos_generados", []):
         for k, v in item.items():
-            setattr(activos, k, v if isinstance(v, dict) else v)
+            setattr(activos, k, v)
 
     resumen = ResumenComunidad(
         total_interacciones_procesadas=len(state["lote"].interacciones) + len(state.get("rechazados", [])),
@@ -145,5 +149,5 @@ def nodo_guardar_oci(state: CommunityLabState) -> dict:
     resultado = subir_paquete_a_oci(state["paquete_final"], periodo_referencia=state["lote"].periodo_referencia)
     paquete_actualizado = state["paquete_final"]
     if paquete_actualizado:
-        paquete_actualizado.almacenamiento_oci = resultado
+        paquete_actualizado.almacenamiento_oci = AlmacenamientoOCI(**resultado)
     return {"oci_resultado": resultado, "paquete_final": paquete_actualizado}
