@@ -4,6 +4,14 @@ Permite cargar un lote de interacciones, ver los registros aislados por validaci
 el analisis, los activos generados (con trazabilidad source_ids), y aplicar el
 control de revision humana (aprobar/rechazar con comentarios) antes de publicar.
 """
+import sys
+from pathlib import Path
+
+# Asegurar que la raiz del proyecto este en sys.path al ejecutar via streamlit run
+RAIZ_PROYECTO = Path(__file__).resolve().parent.parent
+if str(RAIZ_PROYECTO) not in sys.path:
+    sys.path.insert(0, str(RAIZ_PROYECTO))
+
 import streamlit as st
 import json
 
