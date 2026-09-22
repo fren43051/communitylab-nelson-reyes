@@ -1,147 +1,207 @@
 # 🚀 CommunityLab — Motor Inteligente de Transformación y Distribución para Comunidades Digitales
 
-Proyecto del **Hackathon ONE Grupo 10** (Oracle Next Education & Alura). Ingiere interacciones de una
-comunidad digital (Discord, Slack, foros), las analiza con un LLM y genera automáticamente activos de
-marketing listos para publicar (posts de LinkedIn, resúmenes de newsletter, sugerencias de FAQ), guardando
-el resultado en OCI Object Storage (capa Always Free).
+Proyecto del **Hackathon ONE Grupo 10** (Oracle Next Education & Alura).  
+CommunityLab ingiere interacciones de comunidades digitales (Discord, Slack, foros, redes sociales), las analiza y clasifica mediante un modelo LLM orquestado con **LangGraph**, y genera automáticamente activos de marketing listos para publicar (posts de LinkedIn, destacados para newsletter semanal y sugerencias de FAQ), persistiendo el resultado en **Oracle Cloud Infrastructure (OCI) Object Storage** (capa Always Free).
 
-## Arquitectura del pipeline
+---
 
-```
-   JSON/CSV interacciones (crudo)
-            |
-            v
-   [ingestion/loader.py]  --> LoteInteraccionesCrudo (admision permisiva)
-            |
-            v
-   [ingestion/validador.py]  --> validar_lote_crudo()
-            |                       |
-      validos (Interaccion)    rechazados (aislados en auditoria)
-            |
-            v
-   =========== LangGraph ===========
-   [nodo_analizar]            --> LLM: sentimiento, temas, rubrica de relevancia, categoria_accion
-            |
-   (edge condicional: enrutar_categorias)
-      /            \
-     v              v
-[generar_caso_exito]  [generar_faq]
-  post LinkedIn         sugerencia FAQ
-  + newsletter          (con source_ids)
-  (con source_ids)
-      \            /
-       v          v
-      [nodo_consolidar]  --> arma PaqueteDistribucion (incluye resumen + alertas)
-            |
-            v
-      [nodo_guardar_oci]  --> sube JSON a OCI, RELEE para verificar (comprobacion_lectura)
-   ==================================
-            |
-            v
-   [app/streamlit_app.py]  --> panel de curaduría, rechazados y aprobación
+## 🏗️ Arquitectura del Pipeline
+
+```text
+   JSON/CSV de Interacciones
+              │
+              ▼
+   [src/ingestion/loader.py]  ──► Validación con Pydantic (LoteInteracciones)
+              │
+              ▼
+   ═══════════════════════════ LangGraph ═══════════════════════════
+   [nodo_analizar]            ──► LLM: sentimiento, temas, score, categoria_accion
+              │
+              ▼
+   (Edge condicional: enrutar_categorias)
+        ╱            ╲
+       ▼              ▼
+   [generar_caso_exito]  [generar_faq]
+   • Post LinkedIn       • Sugerencia FAQ
+   • Newsletter
+        ╲            ╱
+         ▼          ▼
+   [nodo_consolidar]          ──► Ensambla PaqueteDistribucion
+              │
+              ▼
+   [nodo_guardar_oci]         ──► Almacena JSON en OCI Object Storage (Always Free)
+   ═════════════════════════════════════════════════════════════════
+              │
+              ▼
+   [app/streamlit_app.py]     ──► Panel interactivo de curaduría y aprobación
 ```
 
-## Contratos de datos (Pydantic)
+---
 
-Siguiendo el patrón de validación en dos capas adoptado del equipo compañero (Grupo 34):
+## 📁 Estructura del Repositorio
 
-- **Capa 1 — Admisión permisiva** (`InteraccionCruda`, `LoteInteraccionesCrudo`): acepta lotes con
-  campos faltantes o texto vacío sin bloquear la ingestión completa.
-- **Capa 2 — Validación estricta** (`Interaccion`, aplicada por `validar_lote_crudo`): exige texto no
-  vacío y aísla cada registro inválido en una lista de `rechazados` con su motivo de fallo, sin tumbar
-  el resto del lote.
-- **Rúbrica de relevancia explicable** (`PuntuacionRelevancia`): 3 criterios de 0 a 2 puntos
-  (`evidencia_explicita`, `utilidad_comunitaria`, `claridad_contexto`) más un `motivo_seleccion`
-  obligatorio, en lugar de un score arbitrario del LLM.
-- **Trazabilidad de activos** (`source_ids` en `PostLinkedIn`, `DestaqueNewsletter`, `SugerenciaFAQ`):
-  cada activo generado referencia el/los ID(s) de los mensajes originales que lo respaldan.
-- **Verificación de persistencia OCI** (`comprobacion_lectura` en `AlmacenamientoOCI`): el cliente
-  relee el objeto subido al bucket para confirmar que la escritura persistió correctamente, en lugar
-  de confiar solo en la respuesta de `put_object`.
-
-## Estructura del repositorio
-
-```
+```text
 communitylab-nelson-reyes/
 ├── app/
-│   └── streamlit_app.py
+│   └── streamlit_app.py       # Panel interactivo en Streamlit
 ├── data/
-│   └── interacciones_ejemplo.json
+│   └── interacciones_ejemplo.json # Lote de datos de prueba
 ├── src/
 │   ├── ingestion/
-│   │   ├── models.py       # Esquemas Pydantic en dos capas
-│   │   ├── validador.py    # Aislamiento de registros invalidos
-│   │   └── loader.py       # Carga JSON/CSV + validacion
+│   │   ├── models.py          # Esquemas Pydantic de entrada y salida
+│   │   └── loader.py          # Carga y validación desde JSON/CSV
 │   ├── graph/
-│   │   ├── state.py
-│   │   ├── llm_provider.py
-│   │   ├── nodes.py
-│   │   └── build_graph.py
+│   │   ├── state.py           # Estado tipado para LangGraph
+│   │   ├── llm_provider.py    # Factory multi-proveedor (Gemini, OpenAI, Claude)
+│   │   ├── nodes.py           # Nodos de procesamiento y generación
+│   │   └── build_graph.py     # Construcción y compilación del grafo
 │   ├── prompts/
-│   │   └── canal_prompts.py
+│   │   └── canal_prompts.py   # Prompts estructurados por canal
 │   └── storage/
-│       └── oci_client.py   # Sube y RELEE para verificar persistencia
-├── tests/
-├── main.py
-├── requirements.txt
-├── .env.example
-└── .gitignore
+│       └── oci_client.py      # Cliente de subida a OCI Object Storage
+├── tests/                     # Suite de pruebas
+├── main.py                    # Script de ejecución por consola (CLI)
+├── requirements.txt           # Dependencias del proyecto
+├── .env.example               # Plantilla de variables de entorno
+└── README.md                  # Documentación del proyecto
 ```
 
-## Cómo desplegar y correr
+---
 
-### 1. Clonar y preparar entorno
+## ⚙️ Requisitos Previos
+
+- **Python 3.10 o superior** (probado en Python 3.10, 3.11 y 3.12).
+- Clave de API de al menos un proveedor LLM soportado:
+  - **Google Gemini** (`GOOGLE_API_KEY`)
+  - **OpenAI** (`OPENAI_API_KEY`)
+  - **Anthropic Claude** (`ANTHROPIC_API_KEY`)
+- (Opcional para guardado en la nube) Cuenta en **Oracle Cloud Infrastructure (OCI)** con credenciales configuradas en `~/.oci/config`.
+
+---
+
+## 🚀 Instalación y Despliegue
+
+### 1. Clonar el repositorio y preparar el entorno virtual
 
 ```bash
 git clone https://github.com/fren43051/communitylab-nelson-reyes.git
 cd communitylab-nelson-reyes
+
+# Crear entorno virtual
 python -m venv venv
-source venv/bin/activate    # En Windows: venv\Scripts\activate
+
+# Activar entorno virtual
+# En Windows (PowerShell):
+venv\Scripts\Activate.ps1
+# En Windows (CMD):
+venv\Scripts\activate.bat
+# En Linux / macOS:
+source venv/bin/activate
+
+# Instalar dependencias
 pip install -r requirements.txt
 ```
 
 ### 2. Configurar variables de entorno
 
+Copia la plantilla `.env.example` para crear tu archivo `.env`:
+
 ```bash
+# En Windows (PowerShell):
+Copy-Item .env.example .env
+# En Linux / macOS:
 cp .env.example .env
 ```
 
-Completa tu API key del LLM elegido (Gemini, OpenAI o Claude) y los datos de tu bucket OCI.
+Edita el archivo `.env` según el proveedor LLM que vayas a utilizar:
+
+```env
+# Proveedor activo: gemini | openai | anthropic
+LLM_PROVIDER=gemini
+
+# Google Gemini
+GOOGLE_API_KEY=tu_api_key_de_gemini
+GEMINI_MODEL=gemini-1.5-flash
+
+# OpenAI
+OPENAI_API_KEY=tu_api_key_de_openai
+OPENAI_MODEL=gpt-4o-mini
+
+# Anthropic Claude
+ANTHROPIC_API_KEY=tu_api_key_de_anthropic
+ANTHROPIC_MODEL=claude-haiku-4-5-20251001
+
+# Oracle Cloud Infrastructure (OCI) Object Storage
+OCI_CONFIG_FILE=~/.oci/config
+OCI_CONFIG_PROFILE=DEFAULT
+OCI_NAMESPACE=tu_namespace_oci
+OCI_BUCKET_NAME=communitylab-activos-marketing
+OCI_REGION=mx-monterrey-1
+```
 
 ### 3. Configurar OCI Object Storage (Always Free)
 
-1. Crea una cuenta OCI Always Free si no la tienes.
-2. Crea un bucket (ej. `communitylab-activos-marketing`) en Object Storage.
-3. Genera tu API Key desde la consola de OCI y descarga el archivo `~/.oci/config`.
-4. Completa `OCI_NAMESPACE`, `OCI_BUCKET_NAME` y `OCI_REGION` en tu `.env`.
+1. Inicia sesión en la consola de [Oracle Cloud Infrastructure](https://cloud.oracle.com/).
+2. Crea un Bucket en **Storage > Object Storage & Archive Storage** (por ejemplo: `communitylab-activos-marketing`).
+3. Ve a tu perfil de usuario en OCI > **API Keys** > **Add API Key**, descarga la clave privada y genera el archivo de configuración `~/.oci/config`.
+4. Copia tu `Tenancy OCID`, `User OCID`, `Fingerprint` y `Region` en `~/.oci/config`.
+5. Asegúrate de configurar `OCI_NAMESPACE`, `OCI_BUCKET_NAME` y `OCI_REGION` en tu archivo `.env`.
 
-### 4. Ejecutar el pipeline por consola
+> *Nota:* Si no configuras OCI o las credenciales no están disponibles, el pipeline continuará ejecutándose y registrará el estado localmente sin detener la aplicación.
+
+---
+
+## 💻 Modos de Ejecución
+
+### Opción A: Ejecución por Terminal (CLI)
+
+Ejecuta el pipeline completo sobre el lote de interacciones de ejemplo (`data/interacciones_ejemplo.json`):
 
 ```bash
 python main.py
 ```
 
-Los registros inválidos del batch de ejemplo (`msg-007`, texto vacío) se muestran en consola como
-aislados antes de continuar el análisis con los registros válidos.
+El resultado final estructurado en JSON (con el resumen y los activos generados) se imprimirá en la consola.
 
-### 5. Ejecutar el panel Streamlit
+### Opción B: Panel Interactivo Web (Streamlit)
+
+Inicia el dashboard web para cargar archivos, visualizar el análisis de sentimiento y aprobar/editar los activos generados:
 
 ```bash
 streamlit run app/streamlit_app.py
 ```
 
-## Requisitos mínimos cubiertos (checklist del hackathon)
+Abre tu navegador en `http://localhost:8501`. Desde el panel podrás:
+- Subir lotes en formato JSON o utilizar los datos de ejemplo incluidos.
+- Visualizar métricas globales (interacciones procesadas, sentimiento, temas frecuentes).
+- Revisar y editar copys de LinkedIn, titulares de newsletter y preguntas frecuentes.
+- Consultar el estado de persistencia en OCI Object Storage.
 
-- Ingestión funcional de interacciones (JSON/CSV) vía Pydantic, con validación en dos capas.
-- Análisis de sentimiento y extracción de temas con LLM (Gemini/OpenAI/Claude, intercambiable).
-- Generación de al menos 2 formatos de activos: post LinkedIn + newsletter, o FAQ, según bifurcación.
-- Orquestación del flujo con LangGraph, incluyendo edge condicional según `categoria_accion`.
-- Integración con OCI Object Storage (capa Always Free), con verificación de lectura tras la escritura.
-- Panel Streamlit para visualización de rechazados, análisis y aprobación de activos.
+---
 
-## Próximos pasos sugeridos (diferenciales)
+## ❓ Preguntas Frecuentes y Solución de Problemas
 
-- Despliegue en una VM Compute Always Free de OCI.
-- Webhook real conectando Discord/Slack al pipeline.
-- Generación de imágenes/banners para los posts con un modelo multimodal.
-- Panel de `HumanReviewControl` con historial de revisiones (numero_revision, revisor, comentarios).
+### 1. Mensaje `ANTHROPIC_API_KEY is set and takes precedence over...`
+Es un aviso informativo del SDK de Anthropic notificando que se está usando la clave de API configurada en `.env` en lugar del autodescubrimiento de perfiles de nube. No afecta el funcionamiento del pipeline.
+
+### 2. Cambiar de modelo LLM en caliente
+Puedes cambiar entre **Google Gemini**, **OpenAI** o **Anthropic Claude** modificando únicamente la variable `LLM_PROVIDER` en tu archivo `.env`, sin necesidad de alterar el código del proyecto.
+
+---
+
+## 📋 Requisitos Mínimos Cubiertos (Checklist Hackathon)
+
+- [x] Ingestión funcional de interacciones (JSON/CSV) validada vía Pydantic.
+- [x] Análisis de sentimiento y extracción de temas con LLM intercambiable (Gemini, OpenAI, Claude).
+- [x] Generación de múltiples formatos de activos: Post de LinkedIn, Newsletter semanal y Sugerencias FAQ.
+- [x] Orquestación de agentes y flujo mediante **LangGraph** con bifurcación y edge condicional.
+- [x] Integración con **OCI Object Storage** (Always Free) para almacenamiento de activos.
+- [x] Dashboard interactivo en **Streamlit** para visualización, edición y aprobación.
+
+---
+
+## 🌟 Próximos Pasos Sugeridos
+
+- Despliegue automatizado en una instancia VM Compute Always Free de OCI.
+- Integración de Webhooks en tiempo real para ingesta directa desde Discord o Slack.
+- Generación automatizada de imágenes o banners promocionales mediante modelos multimodales.

@@ -1,9 +1,39 @@
+# Byte-compiled / optimized / cache files
 __pycache__/
-*.pyc
-.env
-.venv/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
 venv/
-output/
-.streamlit/
-*.log
+.venv/
+env/
+ENV/
+
+# Variables de entorno y credenciales (mantener .env.example público)
+.env
+.env.*
+!.env.example
 .oci/
+*.pem
+*.key
+
+# IDEs y editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Pruebas y cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Salidas, logs y archivos temporales
+output/
+*.log
+.streamlit/secrets.toml
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db

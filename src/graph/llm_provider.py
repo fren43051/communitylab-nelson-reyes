@@ -13,24 +13,36 @@ def get_llm(temperature: float = 0.4):
 
     if provider == "gemini":
         from langchain_google_genai import ChatGoogleGenerativeAI
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY no configurada. Configura tu API key en el archivo .env")
+        model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
         return ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model=model,
             temperature=temperature,
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
+            google_api_key=api_key,
         )
     elif provider == "openai":
         from langchain_openai import ChatOpenAI
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY no configurada. Configura tu API key en el archivo .env")
+        model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
         return ChatOpenAI(
-            model="gpt-4o-mini",
+            model=model,
             temperature=temperature,
-            api_key=os.getenv("OPENAI_API_KEY"),
+            api_key=api_key,
         )
     elif provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY no configurada. Configura tu API key en el archivo .env")
+        model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
         return ChatAnthropic(
-            model="claude-3-5-sonnet-20241022",
+            model=model,
             temperature=temperature,
-            api_key=os.getenv("ANTHROPIC_API_KEY"),
+            api_key=api_key,
         )
     else:
         raise ValueError(f"Proveedor LLM no soportado: {provider}")
