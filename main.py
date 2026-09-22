@@ -7,11 +7,17 @@ from src.graph.build_graph import construir_grafo
 
 
 def main():
-    lote = cargar_json("data/interacciones_ejemplo.json")
-    grafo = construir_grafo()
+    lote_validado, rechazados = cargar_json("data/interacciones_ejemplo.json")
 
+    if rechazados:
+        print(f"Se aislaron {len(rechazados)} registro(s) invalido(s):")
+        for r in rechazados:
+            print(f"  - id={r['id']} motivo={r['error'][:80]}...")
+
+    grafo = construir_grafo()
     estado_inicial = {
-        "lote": lote,
+        "lote": lote_validado,
+        "rechazados": rechazados,
         "analisis": [],
         "activos_generados": [],
         "paquete_final": None,

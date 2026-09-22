@@ -1,42 +1,63 @@
 {
+  "schema_version": "1.0.0",
   "origen_comunidad": "Discord_Grupo_ONE_G10",
   "periodo_referencia": "Semana_04",
   "interacciones": [
     {
+      "id": "msg-001",
       "autor": "Mariana Souza",
       "canal": "#logros-y-empleos",
       "tipo": "testimonio",
-      "texto": "Comunidad, quede seleccionada para el puesto de Desarrolladora Junior de IA! El proyecto del curso de LangChain y OCI que construi en mi portfolio marco toda la diferencia en la entrevista tecnica. Muy agradecida con la comunidad por todo el apoyo!"
+      "texto": "Comunidad, quede seleccionada para el puesto de Desarrolladora Junior de IA! El proyecto del curso de LangChain y OCI que construi en mi portfolio marco toda la diferencia en la entrevista tecnica. Muy agradecida con la comunidad por todo el apoyo!",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9001", "fecha": "2026-09-15T14:32:00Z"}
     },
     {
+      "id": "msg-002",
       "autor": "Lucas Albuquerque",
       "canal": "#dudas-langgraph",
       "tipo": "pregunta_tecnica",
-      "texto": "Tengo dudas sobre como estructurar los nodos condicionales en LangGraph cuando la respuesta del LLM necesita reintento. Alguien tiene un ejemplo practico de router?"
+      "texto": "Tengo dudas sobre como estructurar los nodos condicionales en LangGraph cuando la respuesta del LLM necesita reintento. Alguien tiene un ejemplo practico de router?",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9002", "fecha": "2026-09-15T16:05:00Z"}
     },
     {
+      "id": "msg-003",
       "autor": "Fernanda Costa",
       "canal": "#logros-y-empleos",
       "tipo": "testimonio",
-      "texto": "Termine mi certificacion de RAG Avanzado y ya estoy aplicando lo aprendido en un proyecto freelance de chatbots para una pyme. Gracias equipo ONE!"
+      "texto": "Termine mi certificacion de RAG Avanzado y ya estoy aplicando lo aprendido en un proyecto freelance de chatbots para una pyme. Gracias equipo ONE!",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9003", "fecha": "2026-09-16T09:12:00Z"}
     },
     {
+      "id": "msg-004",
       "autor": "Pedro Alvarez",
       "canal": "#soporte-general",
       "tipo": "pregunta_tecnica",
-      "texto": "Como configuro el bucket Always Free de OCI Object Storage desde Python? Me da error de autenticacion con el config file."
+      "texto": "Como configuro el bucket Always Free de OCI Object Storage desde Python? Me da error de autenticacion con el config file.",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9004", "fecha": "2026-09-16T11:47:00Z"}
     },
     {
+      "id": "msg-005",
       "autor": "Julia Mendes",
       "canal": "#feedback-cursos",
       "tipo": "feedback",
-      "texto": "El modulo de RAG estuvo excelente pero senti que faltaron mas ejemplos practicos de chunking para documentos grandes."
+      "texto": "El modulo de RAG estuvo excelente pero senti que faltaron mas ejemplos practicos de chunking para documentos grandes.",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9005", "fecha": "2026-09-17T08:20:00Z"}
     },
     {
+      "id": "msg-006",
       "autor": "Carlos Rivas",
       "canal": "#dudas-langgraph",
       "tipo": "pregunta_tecnica",
-      "texto": "Vuelvo a preguntar sobre nodos condicionales en LangGraph, ya varios compañeros preguntaron lo mismo esta semana, seria bueno un tutorial."
+      "texto": "Vuelvo a preguntar sobre nodos condicionales en LangGraph, ya varios compa\u00f1eros preguntaron lo mismo esta semana, seria bueno un tutorial.",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9006", "fecha": "2026-09-17T10:01:00Z"}
+    },
+    {
+      "id": "msg-007",
+      "autor": "Desconocido",
+      "canal": "#general",
+      "tipo": "sin_clasificar",
+      "texto": "",
+      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9007", "fecha": "2026-09-17T12:00:00Z"}
     }
   ]
 }

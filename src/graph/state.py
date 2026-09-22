@@ -7,6 +7,7 @@ from src.ingestion.models import LoteInteracciones, AnalisisInteraccion, Paquete
 
 class CommunityLabState(TypedDict):
     lote: LoteInteracciones
+    rechazados: list[dict]
     analisis: list[AnalisisInteraccion]
     activos_generados: list[dict]
     paquete_final: Optional[PaqueteDistribucion]
