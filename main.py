@@ -2,11 +2,6 @@
 Script principal: ejecuta el pipeline completo de CommunityLab sobre un lote de interacciones.
 Uso: python main.py
 """
-import sys
-
-if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8")
-
 from src.ingestion.loader import cargar_json
 from src.graph.build_graph import construir_grafo
 
