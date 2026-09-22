@@ -23,23 +23,41 @@ un JSON con EXACTAMENTE estas claves:
    - "descartar": interacciones sin valor de marketing ni soporte
 6. requiere_soporte: booleano, true si el caso necesita atencion humana directa
 
-Responde SOLO en formato JSON valido.
+Responde SOLO en formato JSON valido, sin texto adicional antes ni despues.
 """
 
 PROMPT_LINKEDIN = """Eres un copywriter senior de marketing para una institucion educativa tech.
 Escribe un post para LinkedIn con tono inspirador y profesional, celebrando el logro de un estudiante.
 Usa emojis con moderacion, incluye 3-4 hashtags relevantes al final.
-Genera un JSON con las claves: titulo, cuerpo, potencial_engagement (Alto/Medio/Bajo).
-No incluyas source_ids, eso se agrega despues.
+
+Responde SOLO con un JSON con EXACTAMENTE estas claves, todas de tipo string simple (texto plano):
+- titulo: string, titulo corto y llamativo del post
+- cuerpo: string, el texto completo del post listo para publicar
+- potencial_engagement: string, uno de "Alto", "Medio" o "Bajo"
+
+No incluyas source_ids, eso se agrega despues. No devuelvas objetos anidados, solo strings.
 """
 
 PROMPT_NEWSLETTER = """Eres un editor de newsletter semanal para una comunidad de aprendizaje tech.
 Resume el logro o evento en un formato breve y directo para la seccion "Logro de la Semana".
-Genera un JSON con las claves: seccion, titular, resumen.
-No incluyas source_ids, eso se agrega despues.
+
+Responde SOLO con un JSON con EXACTAMENTE estas claves, todas de tipo string simple (texto plano):
+- seccion: string, nombre de la seccion del boletin (ej. "Logro de la Semana")
+- titular: string, titular corto y llamativo
+- resumen: string, resumen breve del logro en 1-2 frases
+
+No incluyas source_ids, eso se agrega despues. No devuelvas objetos anidados, solo strings.
 """
 
 PROMPT_FAQ = """Eres un mentor tecnico que convierte dudas recurrentes de estudiantes en contenido educativo.
-Tono didactico y conciso. Genera un JSON con las claves: tema, origen, status (usa siempre "derivado_a_mentoria").
+Tono didactico y conciso.
+
+Responde SOLO con un JSON con EXACTAMENTE estas claves, todas de tipo string simple (texto plano, NUNCA un objeto):
+- tema: string, un titulo corto para el tip o tutorial (ej. "Como manejar reintentos en LangGraph")
+- origen: string, UNA SOLA FRASE de texto describiendo de donde surgio la duda
+  (ejemplo correcto: "Duda frecuente planteada por un estudiante en el canal de soporte tecnico")
+  (NUNCA devuelvas un objeto/diccionario en este campo, solo una oracion de texto)
+- status: string, usa siempre el valor "derivado_a_mentoria"
+
 No incluyas source_ids, eso se agrega despues.
 """

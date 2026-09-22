@@ -31,8 +31,27 @@ def _llm_json(prompt_sistema: str, contenido_usuario: str) -> dict:
     ])
     texto = respuesta.content.strip()
     if texto.startswith("```"):
-        texto = texto.strip("`").replace("json\n", "", 1)
+        texto = texto.strip("`")
+        if texto.lower().startswith("json"):
+            texto = texto[4:]
+        texto = texto.strip()
     return json.loads(texto)
+
+
+def _forzar_string(valor, fallback: str = "") -> str:
+    """
+    Normaliza un valor devuelto por el LLM a string plano.
+    Si el LLM devuelve un dict/objeto en un campo que deberia ser texto,
+    se extrae el contenido textual mas relevante en lugar de fallar la validacion.
+    """
+    if isinstance(valor, str):
+        return valor
+    if isinstance(valor, dict):
+        for clave_preferida in ("texto", "resumen", "descripcion", "canal", "autor"):
+            if clave_preferida in valor and isinstance(valor[clave_preferida], str):
+                return valor[clave_preferida]
+        return json.dumps(valor, ensure_ascii=False)
+    return fallback or str(valor)
 
 
 def nodo_analizar(state: CommunityLabState) -> CommunityLabState:
@@ -61,7 +80,12 @@ def nodo_generar_caso_exito(state: CommunityLabState) -> CommunityLabState:
     linkedin = _llm_json(PROMPT_LINKEDIN, f"Autor: {mejor.autor}\nTestimonio: {mejor.texto}")
     newsletter = _llm_json(PROMPT_NEWSLETTER, f"Autor: {mejor.autor}\nTestimonio: {mejor.texto}")
 
+    linkedin["titulo"] = _forzar_string(linkedin.get("titulo"))
+    linkedin["cuerpo"] = _forzar_string(linkedin.get("cuerpo"))
     linkedin["source_ids"] = [mejor.id]
+
+    newsletter["titular"] = _forzar_string(newsletter.get("titular"))
+    newsletter["resumen"] = _forzar_string(newsletter.get("resumen"))
     newsletter["source_ids"] = [mejor.id]
 
     state["activos_generados"].append({"post_linkedin": PostLinkedIn(**linkedin).model_dump()})
@@ -76,7 +100,15 @@ def nodo_generar_faq(state: CommunityLabState) -> CommunityLabState:
     mejor = max(candidatos, key=lambda a: a.score_relevancia)
 
     faq = _llm_json(PROMPT_FAQ, f"Autor: {mejor.autor}\nCanal: {mejor.canal}\nPregunta: {mejor.texto}")
+
+    faq["tema"] = _forzar_string(faq.get("tema"))
+    faq["origen"] = _forzar_string(
+        faq.get("origen"),
+        fallback=f"Duda planteada por {mejor.autor} en el canal {mejor.canal}",
+    )
+    faq["status"] = _forzar_string(faq.get("status"), fallback="derivado_a_mentoria")
     faq["source_ids"] = [mejor.id]
+
     state["activos_generados"].append({"sugerencia_contenido_faq": SugerenciaFAQ(**faq).model_dump()})
     return state
 
