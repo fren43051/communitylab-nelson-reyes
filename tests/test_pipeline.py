@@ -15,6 +15,7 @@ from src.ingestion.models import (
     Interaccion,
     LoteInteracciones,
     AnalisisInteraccion,
+    PuntuacionRelevancia,
     PaqueteDistribucion,
 )
 from src.ingestion.validador import validar_lote_crudo
@@ -124,9 +125,18 @@ def test_router_enrutar_caso_exito():
         "analisis": [
             AnalisisInteraccion(
                 id="test-01",
+                autor="Mariana Souza",
+                canal="discord",
+                tipo="testimonio",
+                texto="Quedé contratada como Dev Jr gracias a la comunidad!",
                 sentimiento="Muy Positivo",
-                puntuacion_relevancia=0.95,
-                temas=["Logro"],
+                puntuacion_relevancia=PuntuacionRelevancia(
+                    evidencia_explicita=2,
+                    utilidad_comunitaria=2,
+                    claridad_contexto=2,
+                    total=6,
+                ),
+                temas=["Logro", "Contratación"],
                 categoria_accion="caso_exito",
                 motivo_seleccion="Testimonio relevante de contratación",
                 resumen_ejecutivo="Testimonio de contratación",
@@ -143,9 +153,18 @@ def test_router_enrutar_faq():
         "analisis": [
             AnalisisInteraccion(
                 id="test-02",
+                autor="Lucas Albuquerque",
+                canal="discord",
+                tipo="pregunta_tecnica",
+                texto="¿Cómo estructurar nodos condicionales en LangGraph?",
                 sentimiento="Neutral",
-                puntuacion_relevancia=0.85,
-                temas=["LangGraph"],
+                puntuacion_relevancia=PuntuacionRelevancia(
+                    evidencia_explicita=2,
+                    utilidad_comunitaria=2,
+                    claridad_contexto=1,
+                    total=5,
+                ),
+                temas=["LangGraph", "Nodos Condicionales"],
                 categoria_accion="faq_tip",
                 motivo_seleccion="Pregunta técnica recurrente",
                 resumen_ejecutivo="Duda sobre router en LangGraph",
