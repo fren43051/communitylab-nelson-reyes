@@ -122,15 +122,15 @@ def test_router_enrutar_caso_exito():
     """Valida que interacciones de caso de éxito enruten a generar_caso_exito."""
     estado = {
         "analisis": [
-            {
-                "id": "test-01",
-                "sentimiento": "Muy Positivo",
-                "puntuacion_relevancia": 0.95,
-                "temas": ["Logro"],
-                "categoria_accion": "caso_exito",
-                "motivo_seleccion": "Testimonio relevante de contratación",
-                "resumen_ejecutivo": "Testimonio de contratación",
-            }
+            AnalisisInteraccion(
+                id="test-01",
+                sentimiento="Muy Positivo",
+                puntuacion_relevancia=0.95,
+                temas=["Logro"],
+                categoria_accion="caso_exito",
+                motivo_seleccion="Testimonio relevante de contratación",
+                resumen_ejecutivo="Testimonio de contratación",
+            )
         ]
     }
     destino = enrutar_categorias(estado)
@@ -141,15 +141,15 @@ def test_router_enrutar_faq():
     """Valida que preguntas técnicas enruten a generar_faq."""
     estado = {
         "analisis": [
-            {
-                "id": "test-02",
-                "sentimiento": "Neutral",
-                "puntuacion_relevancia": 0.85,
-                "temas": ["LangGraph"],
-                "categoria_accion": "faq_tip",
-                "motivo_seleccion": "Pregunta técnica recurrente",
-                "resumen_ejecutivo": "Duda sobre router en LangGraph",
-            }
+            AnalisisInteraccion(
+                id="test-02",
+                sentimiento="Neutral",
+                puntuacion_relevancia=0.85,
+                temas=["LangGraph"],
+                categoria_accion="faq_tip",
+                motivo_seleccion="Pregunta técnica recurrente",
+                resumen_ejecutivo="Duda sobre router en LangGraph",
+            )
         ]
     }
     destino = enrutar_categorias(estado)
