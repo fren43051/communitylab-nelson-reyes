@@ -15,15 +15,7 @@ from src.ingestion.models import (
     Interaccion,
     LoteInteracciones,
     AnalisisInteraccion,
-    TipoInteraccion,
-    SentimientoEnum,
-    CategoriaAccion,
     PaqueteDistribucion,
-    ResumenComunidad,
-    ActivosDistribucion,
-    ControlRevisionHumana,
-    AlmacenamientoOci,
-    MetadatosEjecucion,
 )
 from src.ingestion.validador import validar_lote_crudo
 from src.graph.nodes import enrutar_categorias
@@ -130,14 +122,15 @@ def test_router_enrutar_caso_exito():
     """Valida que interacciones de caso de éxito enruten a generar_caso_exito."""
     estado = {
         "analisis": [
-            AnalisisInteraccion(
-                id_interaccion="test-01",
-                sentimiento=SentimientoEnum.MUY_POSITIVO,
-                score_relevancia=0.95,
-                temas=["Logro"],
-                categoria_accion=CategoriaAccion.CASO_EXITO,
-                resumen_ejecutivo="Testimonio de contratación",
-            )
+            {
+                "id": "test-01",
+                "sentimiento": "Muy Positivo",
+                "puntuacion_relevancia": 0.95,
+                "temas": ["Logro"],
+                "categoria_accion": "caso_exito",
+                "motivo_seleccion": "Testimonio relevante de contratación",
+                "resumen_ejecutivo": "Testimonio de contratación",
+            }
         ]
     }
     destino = enrutar_categorias(estado)
@@ -148,14 +141,15 @@ def test_router_enrutar_faq():
     """Valida que preguntas técnicas enruten a generar_faq."""
     estado = {
         "analisis": [
-            AnalisisInteraccion(
-                id_interaccion="test-02",
-                sentimiento=SentimientoEnum.NEUTRO,
-                score_relevancia=0.85,
-                temas=["LangGraph"],
-                categoria_accion=CategoriaAccion.FAQ_EDUCATIVO,
-                resumen_ejecutivo="Duda sobre router en LangGraph",
-            )
+            {
+                "id": "test-02",
+                "sentimiento": "Neutral",
+                "puntuacion_relevancia": 0.85,
+                "temas": ["LangGraph"],
+                "categoria_accion": "faq_tip",
+                "motivo_seleccion": "Pregunta técnica recurrente",
+                "resumen_ejecutivo": "Duda sobre router en LangGraph",
+            }
         ]
     }
     destino = enrutar_categorias(estado)
