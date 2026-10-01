@@ -201,7 +201,7 @@ Cobertura de pruebas:
 
 ---
 
-## 📋 Requisitos Cubiertos (Checklist Hackathon 1000%)
+## 📋 Requisitos Cubiertos (Checklist Hackathon 100%)
 
 - [x] **Ingestión funcional** validada vía Pydantic (admite lotes crudos y aísla registros corruptos).
 - [x] **Análisis cognitivo multimodelo** con LLM intercambiable (Gemini, OpenAI, Claude).
