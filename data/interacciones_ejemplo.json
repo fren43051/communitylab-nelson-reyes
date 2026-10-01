@@ -1,63 +1,55 @@
 {
   "schema_version": "1.0.0",
   "origen_comunidad": "Discord_Grupo_ONE_G10",
-  "periodo_referencia": "Semana_04",
+  "periodo_referencia": "Semana_04_2026",
   "interacciones": [
     {
-      "id": "msg-001",
+      "id": "discord-msg-001",
       "autor": "Mariana Souza",
       "canal": "#logros-y-empleos",
       "tipo": "testimonio",
-      "texto": "Comunidad, quede seleccionada para el puesto de Desarrolladora Junior de IA! El proyecto del curso de LangChain y OCI que construi en mi portfolio marco toda la diferencia en la entrevista tecnica. Muy agradecida con la comunidad por todo el apoyo!",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9001", "fecha": "2026-09-15T14:32:00Z"}
+      "texto": "Comunidad, ¡quedé seleccionada para el puesto de Desarrolladora Junior de IA! El proyecto del curso de LangChain y OCI que construí en mi portafolio marcó toda la diferencia en la entrevista técnica. Muy agradecida con la comunidad por todo el apoyo y las mentorías.",
+      "metadata_origen": {
+        "plataforma": "discord",
+        "identificador_original": "msg-1234567890",
+        "fecha": "2026-09-28T14:30:00Z"
+      }
     },
     {
-      "id": "msg-002",
+      "id": "discord-msg-002",
       "autor": "Lucas Albuquerque",
       "canal": "#dudas-langgraph",
       "tipo": "pregunta_tecnica",
-      "texto": "Tengo dudas sobre como estructurar los nodos condicionales en LangGraph cuando la respuesta del LLM necesita reintento. Alguien tiene un ejemplo practico de router?",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9002", "fecha": "2026-09-15T16:05:00Z"}
+      "texto": "Tengo dudas sobre cómo estructurar los nodos condicionales en LangGraph cuando la respuesta del LLM necesita reintento con fallback. ¿Alguien tiene un ejemplo práctico de cómo armar el router sin caer en ciclos infinitos?",
+      "metadata_origen": {
+        "plataforma": "discord",
+        "identificador_original": "msg-1234567891",
+        "fecha": "2026-09-28T16:45:00Z"
+      }
     },
     {
-      "id": "msg-003",
-      "autor": "Fernanda Costa",
-      "canal": "#logros-y-empleos",
-      "tipo": "testimonio",
-      "texto": "Termine mi certificacion de RAG Avanzado y ya estoy aplicando lo aprendido en un proyecto freelance de chatbots para una pyme. Gracias equipo ONE!",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9003", "fecha": "2026-09-16T09:12:00Z"}
-    },
-    {
-      "id": "msg-004",
-      "autor": "Pedro Alvarez",
-      "canal": "#soporte-general",
-      "tipo": "pregunta_tecnica",
-      "texto": "Como configuro el bucket Always Free de OCI Object Storage desde Python? Me da error de autenticacion con el config file.",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9004", "fecha": "2026-09-16T11:47:00Z"}
-    },
-    {
-      "id": "msg-005",
-      "autor": "Julia Mendes",
+      "id": "discord-msg-003",
+      "autor": "Carlos Mendoza",
       "canal": "#feedback-cursos",
       "tipo": "feedback",
-      "texto": "El modulo de RAG estuvo excelente pero senti que faltaron mas ejemplos practicos de chunking para documentos grandes.",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9005", "fecha": "2026-09-17T08:20:00Z"}
+      "texto": "Excelente la masterclass de agentes autónomos y persistencia en Oracle Cloud Object Storage. La explicación de la arquitectura Always Free me aclaró completamente cómo estructurar buckets seguros para despliegue.",
+      "metadata_origen": {
+        "plataforma": "discord",
+        "identificador_original": "msg-1234567892",
+        "fecha": "2026-09-29T10:15:00Z"
+      }
     },
     {
-      "id": "msg-006",
-      "autor": "Carlos Rivas",
-      "canal": "#dudas-langgraph",
-      "tipo": "pregunta_tecnica",
-      "texto": "Vuelvo a preguntar sobre nodos condicionales en LangGraph, ya varios compa\u00f1eros preguntaron lo mismo esta semana, seria bueno un tutorial.",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9006", "fecha": "2026-09-17T10:01:00Z"}
-    },
-    {
-      "id": "msg-007",
-      "autor": "Desconocido",
+      "id": "discord-msg-004",
+      "autor": "Usuario Desconocido",
       "canal": "#general",
       "tipo": "sin_clasificar",
-      "texto": "",
-      "metadata_origen": {"plataforma": "Discord", "identificador_original": "d-9007", "fecha": "2026-09-17T12:00:00Z"}
+      "texto": "   ",
+      "metadata_origen": {
+        "plataforma": "discord",
+        "identificador_original": "msg-1234567893",
+        "fecha": "2026-09-29T11:00:00Z"
+      }
     }
   ]
 }
