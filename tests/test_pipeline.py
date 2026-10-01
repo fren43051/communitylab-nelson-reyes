@@ -1,12 +1,19 @@
-import pytest
+import os
+import sys
+from pathlib import Path
+
+# Asegurar que la raíz del proyecto esté en sys.path para resolución de módulos
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from datetime import datetime, timezone
+import pytest
 from fastapi.testclient import TestClient
 
 from src.ingestion.models import (
     InteraccionCruda,
     LoteInteraccionesCrudo,
-    InteraccionValidada,
-    LoteInteraccionesValidadas,
+    Interaccion,
+    LoteInteracciones,
     AnalisisInteraccion,
     TipoInteraccion,
     SentimientoEnum,
