@@ -1,0 +1,102 @@
+{
+  "name": "n8n_workflow_communitylab",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "linkedin-events",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -32
+      ],
+      "id": "7437c041-16be-4f1b-907c-32ac2128bd29",
+      "name": "Webhook",
+      "webhookId": "08fff9e3-84af-45e6-b72b-d40bc1b3cf73"
+    },
+    {
+      "parameters": {
+        "jsCode": "const entradas = $input.all();\n\nreturn {\n  json: {\n    schema_version: \"1.0.0\",\n    origen_comunidad: \"linkedin\",\n    periodo_referencia: new Date().toISOString().slice(0, 10),\n    interacciones: entradas\n      .map((item, index) => {\n        const dato = item.json.body ?? item.json;\n        const texto = dato.comment ?? dato.text ?? dato.mensaje ?? dato.texto ?? \"\";\n        return {\n          id: dato.id ?? `linkedin-${Date.now()}-${index}`,\n          autor: dato.authorName ?? dato.author ?? dato.autor ?? \"Anónimo\",\n          canal: \"linkedin\",\n          tipo: \"sin_clasificar\",\n          texto: texto,\n          metadata_origen: {\n            plataforma: \"linkedin\"\n          },\n          identificador_original: dato.id ?? null,\n          fecha: dato.createdAt ?? new Date().toISOString()\n        };\n      })\n      .filter((interaccion) => interaccion.texto.trim().length > 0)\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -32
+      ],
+      "id": "1d47ed25-35f6-4ee5-b169-329f8d6c08ac",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.17.0.1:8000/api/webhooks/linkedin",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Webhook-Secret",
+              "value": "ba05d9dfdc5987c7d13e8ea11dd73acbb2b23a2c2c201cb811d855116dd259e5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        160,
+        -32
+      ],
+      "id": "2ca430d2-9efd-4645-9d90-3fa2a0fb5ad3",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "793fd44c-93d8-47c0-bbb2-1701002b103e",
+  "meta": {
+    "instanceId": "4ef34bac64bedf1381d64018eada3a84db3a5006065b96d5549662fe07d6b8df"
+  },
+  "tags": []
+}
