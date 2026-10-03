@@ -1,175 +1,146 @@
 # 🚀 CommunityLab — Motor Inteligente de Transformación y Distribución para Comunidades Digitales
 
-[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![LangGraph](https://img.shields.io/badge/Orquestación-LangGraph-FF4F00?style=for-the-badge&logo=diagram&logoColor=white)](https://langchain-ai.github.io/langgraph/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Oracle Cloud Infrastructure](https://img.shields.io/badge/Oracle_Cloud-Always_Free-F80000?style=for-the-badge&logo=oracle&logoColor=white)](https://cloud.oracle.com/)
-[![Tests Passing](https://img.shields.io/badge/Pytest-Passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Orquestación: LangGraph](https://img.shields.io/badge/orquestacion-LangGraph-orange.svg)](https://langchain-ai.github.io/langgraph/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
+[![Oracle Cloud](https://img.shields.io/badge/OCI-Always%20Free-red.svg)](https://www.oracle.com/cloud/free/)
+[![Pytest](https://img.shields.io/badge/pytest-7%20passed-brightgreen.svg)](https://pytest.org/)
+[![Docker & n8n](https://img.shields.io/badge/n8n-Docker%20Automated-FF6D5A.svg)](https://n8n.io/)
 
-Proyecto del **Hackathon ONE Grupo 10** (Oracle Next Education & Alura).  
-CommunityLab ingiere interacciones de comunidades digitales (Discord, Slack, foros, redes sociales, LinkedIn), las analiza y clasifica mediante un modelo LLM orquestado con **LangGraph**, y genera automáticamente activos de marketing listos para publicar (posts de LinkedIn, destacados para newsletter semanal y sugerencias de FAQ), persistiendo el resultado en **Oracle Cloud Infrastructure (OCI) Object Storage** (capa Always Free).
+**Proyecto del Hackathon ONE Grupo 10 (Oracle Next Education & Alura)**  
+**CommunityLab** ingiere interacciones de comunidades digitales (Discord, Slack, foros, redes sociales, LinkedIn), las analiza y clasifica mediante un modelo LLM orquestado con **LangGraph**, y genera automáticamente activos de marketing listos para publicar (posts de LinkedIn, destacados para newsletter semanal y sugerencias de FAQ), persistiendo el resultado en **Oracle Cloud Infrastructure (OCI) Object Storage** (capa Always Free) y desplegado en **OCI Compute**.
 
-Además del modo de ejecución manual (CLI/Streamlit), el proyecto incluye una **API HTTP con webhook** que permite disparar el pipeline automáticamente desde plataformas externas o herramientas de automatización como **n8n**, habilitando un flujo de ingesta en tiempo real sin intervención manual.
+Además del modo de ejecución manual (CLI/Streamlit), el proyecto incluye una **API HTTP con Webhook** que permite disparar el pipeline automáticamente desde plataformas externas o herramientas de automatización como **n8n** en contenedor Docker, habilitando un flujo de ingesta en tiempo real sin intervención manual.
 
 ---
 
-## 📺 Demostración en Video y Evidencia
+## 🎥 Demostración en Video y Evidencia
 
 El flujo de integración completa fue grabado y verificado en tiempo real:
-* **Recorrido:** Webhook externo (PowerShell) ➔ Normalización en **n8n Cloud** ➔ Túnel **ngrok** (dominio dev fijo) ➔ Backend **FastAPI** ➔ Orquestación con **LangGraph + Claude** ➔ Persistencia en **OCI Object Storage (Región Monterrey)**.
-* **Evidencia OCI:** Verificación directa en la consola web de Oracle Cloud del archivo `paquete-distribucion.json` creado en el bucket `communitylab-activos-marketing`.
-* 📁 **Guía de integración técnica detallada:** Consulta [`INTEGRACION_WEBHOOK_N8N_LINKEDIN.md`](./INTEGRACION_WEBHOOK_N8N_LINKEDIN.md) para ver la arquitectura y evidencia fotográfica del despliegue.
+
+* 🎬 **Recorrido: Webhook externo (PowerShell) ➔ Normalización en n8n Cloud ➔ Túnel / Ingress directo ➔ Backend FastAPI ➔ Orquestación con LangGraph + Claude / Gemini ➔ Persistencia en OCI Object Storage (Región Monterrey / Phoenix)**.
+* ☁️ **Evidencia OCI:** Verificación directa en la consola Web de Oracle Cloud del archivo `paquete-distribucion.json` creado en el bucket `communitylab-activos-marketing` (Namespace `axv2uguhheq1`).
+* 🐙 **GitHub / Dark Material:** Pipeline verificado end-to-end con 100% de tests aprobados (`7 passed`).
 
 ---
 
-## 🏗️ Arquitectura del Pipeline
+## 🏗️ Arquitectura del Sistema
 
-```text
-   JSON/CSV de Interacciones          Webhook externo (n8n, LinkedIn, etc.)
-              │                                    │
-              │                                    ▼
-              │                    POST /api/webhooks/linkedin (FastAPI)
-              │                                    │
-              ▼                                    ▼
-   [src/ingestion/loader.py]  ──►  Validación con Pydantic (LoteInteracciones)
-              │
-              ▼
-   ═══════════════════════════ LangGraph ═══════════════════════════
-   [nodo_analizar]            ──► LLM: sentimiento, temas, score, categoria_accion
-              │
-              ▼
-   (Edge condicional: enrutar_categorias)
-        ╱            ╲
-       ▼              ▼
-   [generar_caso_exito]  [generar_faq]
-   • Post LinkedIn       • Sugerencia FAQ
-   • Newsletter
-        ╲            ╱
-         ▼          ▼
-   [nodo_consolidar]          ──► Ensambla PaqueteDistribucion
-              │
-              ▼
-   [nodo_guardar_oci]         ──► Almacena JSON en OCI Object Storage (Always Free)
-   ═════════════════════════════════════════════════════════════════
-              │
-              ▼
-   [app/streamlit_app.py]     ──► Panel interactivo de curaduría y aprobación
+```
+                  ┌──────────────────────────────────────────────┐
+                  │              FUENTES DE COMUNIDAD            │
+                  │   (Discord, Slack, Foros, Webhooks, LinkedIn)│
+                  └──────────────────────┬───────────────────────┘
+                                         │
+                 ┌───────────────────────┴───────────────────────┐
+                 │                                               │
+                 ▼ (Modo Manual)                                 ▼ (Modo Automático)
+     ┌───────────────────────┐                       ┌───────────────────────┐
+     │  Streamlit UI / CLI   │                       │      n8n Workflow     │
+     │  (Curaduría Humana)   │                       │ (Normalizador eventos)│
+     └───────────┬───────────┘                       └───────────┬───────────┘
+                 │                                               │
+                 │ JSON                                          │ POST (X-Webhook-Secret)
+                 │                                               ▼
+                 │                                   ┌───────────────────────┐
+                 │                                   │    FastAPI Endpoint   │
+                 │                                   │ (/api/webhooks/...)   │
+                 │                                   └───────────┬───────────┘
+                 │                                               │
+                 └───────────────────────┬───────────────────────┘
+                                         │
+                                         ▼
+                 ┌───────────────────────────────────────────────┐
+                 │         src/ingestion/validador.py            │
+                 │  - Validación Pydantic (LoteInteracciones)    │
+                 │  - Aislamiento de registros vacíos/inválidos  │
+                 └───────────────────────┬───────────────────────┘
+                                         │
+                                         ▼
+                 ┌───────────────────────────────────────────────┐
+                 │         LANGGRAPH COGNITIVE PIPELINE          │
+                 │                                               │
+                 │             [nodo_analizar]                   │
+                 │       (Extracción Sentimiento + Temas)        │
+                 │                      │                        │
+                 │                      ▼                        │
+                 │           (enrutar_categorias)                │
+                 │                ╱           ╲                  │
+                 │               ▼             ▼                 │
+                 │    [generar_caso_exito]  [generar_faq]        │
+                 │               ╲             ╱                 │
+                 │                ▼           ▼                  │
+                 │            [nodo_consolidar]                  │
+                 │       (Estructura PaqueteDistribucion)        │
+                 │                      │                        │
+                 │                      ▼                        │
+                 │             [nodo_guardar_oci]                │
+                 └──────────────────────┬────────────────────────┘
+                                        │
+                                        ▼
+                 ┌───────────────────────────────────────────────┐
+                 │          ORACLE CLOUD INFRASTRUCTURE          │
+                 │   - VM Compute Always Free (Linux Ubuntu ARM) │
+                 │   - Object Storage Bucket:                    │
+                 │     communitylab-activos-marketing            │
+                 │   - Objeto: paquete-distribucion.json         │
+                 └───────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📁 Estructura del Repositorio
+## 🚀 Despliegue y Ejecución Rápida
 
-```text
-communitylab-nelson-reyes/
-├── api/
-│   ├── __init__.py
-│   ├── main.py                 # App FastAPI (expone /health y el router de webhooks)
-│   └── webhooks.py             # Endpoint POST /api/webhooks/linkedin con validación de secreto
-├── app/
-│   └── streamlit_app.py       # Panel interactivo en Streamlit
-├── data/
-│   └── interacciones_ejemplo.json # Lote de 3 casos canónicos del brief (Testimonio, FAQ, Feedback)
-├── src/
-│   ├── ingestion/
-│   │   ├── models.py          # Esquemas Pydantic de entrada y salida
-│   │   └── validador.py       # Aislamiento y validación de registros crudos
-│   ├── graph/
-│   │   ├── state.py           # Estado tipado para LangGraph
-│   │   ├── llm_provider.py    # Factory multi-proveedor (Gemini, OpenAI, Claude)
-│   │   ├── nodes.py           # Nodos de procesamiento, router y generadores
-│   │   └── build_graph.py     # Construcción y compilación del grafo
-│   ├── prompts/
-│   │   └── canal_prompts.py   # Prompts estructurados por canal
-│   └── storage/
-│       └── oci_client.py      # Cliente de subida a OCI Object Storage
-├── tests/
-│   └── test_pipeline.py       # Suite automatizada con pytest (Pydantic, Router, Webhooks)
-├── main.py                    # Script de ejecución por consola (CLI)
-├── requirements.txt           # Dependencias del proyecto
-├── .env.example               # Plantilla de variables de entorno
-├── INTEGRACION_WEBHOOK_N8N_LINKEDIN.md  # Documento técnico de integración con n8n y OCI
-├── BITACORA.md                # Bitácora detallada de avances y arquitectura
-└── README.md                  # Documentación principal
-```
+### 1. Requisitos Previos
+* **Python 3.11+**
+* Acceso a una cuenta de **Oracle Cloud Infrastructure (OCI)** en capa Always Free.
+* API Key de tu proveedor de LLM preferido (Google Gemini, Anthropic Claude o OpenAI).
 
----
-
-## ⚙️ Requisitos Previos
-
-- **Python 3.11** (entorno estandarizado para compatibilidad con OCI SDK).
-- Clave de API de al menos un proveedor LLM soportado:
-  - **Google Gemini** (`GOOGLE_API_KEY`)
-  - **OpenAI** (`OPENAI_API_KEY`)
-  - **Anthropic Claude** (`ANTHROPIC_API_KEY`)
-- (Opcional para guardado en la nube) Cuenta en **Oracle Cloud Infrastructure (OCI)** con credenciales configuradas en `~/.oci/config`.
-- (Opcional para modo automatización) **n8n** (Cloud o self-hosted) y **ngrok** para exponer la API local.
-
----
-
-## 🚀 Instalación y Despliegue
-
-### 1. Clonar el repositorio y preparar el entorno virtual
-
+### 2. Instalación del Entorno
 ```bash
+# Clonar repositorio
 git clone https://github.com/fren43051/communitylab-nelson-reyes.git
 cd communitylab-nelson-reyes
 
-# Crear entorno virtual con Python 3.11
-python -m venv .venv
-
-# Activar entorno virtual
-# En Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# En Linux / macOS:
-source .venv/bin/activate
+# Crear y activar entorno virtual
+python3 -m venv .venv
+source .venv/bin/activate  # En Windows: .venv\Scripts\activate
 
 # Instalar dependencias
 pip install -r requirements.txt
 ```
 
-### 2. Configurar variables de entorno
+### 3. Configuración de Variables (`.env`)
+Copia `.env.example` a `.env` y completa tus credenciales:
+```ini
+# --- Proveedor de Inteligencia Artificial ---
+GEMINI_API_KEY=tu_api_key_aqui
+LLM_MODEL=gemini-1.5-flash
 
-Copia la plantilla `.env.example` para crear tu archivo `.env`:
-
-```bash
-# En Windows (PowerShell):
-Copy-Item .env.example .env
-# En Linux / macOS:
-cp .env.example .env
-```
-
-Edita el archivo `.env` según tu proveedor LLM y credenciales de OCI:
-
-```env
-# Proveedor activo: gemini | openai | anthropic
-LLM_PROVIDER=anthropic
-
-# Anthropic Claude
-ANTHROPIC_API_KEY=tu_api_key_de_anthropic
-ANTHROPIC_MODEL=claude-haiku-4-5-20251001
-
-# Oracle Cloud Infrastructure (OCI) Object Storage
+# --- Oracle Cloud Infrastructure (OCI) Object Storage ---
 OCI_CONFIG_FILE=~/.oci/config
 OCI_CONFIG_PROFILE=DEFAULT
-OCI_NAMESPACE=tu_namespace_oci
+OCI_NAMESPACE=axv2uguhheq1
 OCI_BUCKET_NAME=communitylab-activos-marketing
-OCI_REGION=mx-monterrey-1
+OCI_REGION=us-phoenix-1
 
-# --- Webhooks (modo automatización con n8n) ---
-WEBHOOK_SECRET=tu_secreto_seguro_para_webhook
+# --- Webhook & API Security ---
+WEBHOOK_SECRET=tu-clave-secreta-de-webhook-2026
 WEBHOOK_MAX_ITEMS=100
 ```
 
 ---
 
-## 💻 Modos de Ejecución
+## ⚙️ Modos de Ejecución
 
-### Opción A: Ejecución por Terminal (CLI)
-Procesa el lote canónico de ejemplo (`data/interacciones_ejemplo.json`) directamente:
+### Opción A: API HTTP con Webhook (Producción / n8n)
+Levanta el servidor FastAPI para recepción automatizada:
 ```bash
-python main.py
+uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
+* **Swagger UI / Documentación interactiva:** `http://localhost:8000/docs`
+* **Health Check:** `http://localhost:8000/health`
+* **Endpoint Webhook:** `POST http://localhost:8000/api/webhooks/linkedin` (requiere cabecera `X-Webhook-Secret`).
 
 ### Opción B: Panel Interactivo Web (Streamlit)
 Inicia la interfaz de curaduría humana y edición de activos:
@@ -177,15 +148,15 @@ Inicia la interfaz de curaduría humana y edición de activos:
 streamlit run app/streamlit_app.py
 ```
 
-### Opción C: API HTTP con Webhook (Automatización n8n)
-Levanta el servidor FastAPI para recibir eventos externos:
-```bash
-uvicorn api.main:app --host 0.0.0.0 --port 8000
-```
+### Opción C: Automatización con n8n en Docker
+El repositorio incluye el flujo oficial exportado en **`docs/n8n_workflow_communitylab.json`**:
+1. Abre n8n en tu navegador (`http://localhost:5678`).
+2. Importa el archivo JSON del flujo.
+3. El webhook de n8n recibirá eventos externos, los normalizará mediante JavaScript y disparará la API de FastAPI con persistencia automática en OCI.
 
 ---
 
-## 🧪 Pruebas Automatizadas
+## 🧪 Pruebas Automatizadas (Pytest)
 
 El proyecto incluye una suite completa de pruebas unitarias y de integración construida con `pytest`:
 
@@ -193,23 +164,65 @@ El proyecto incluye una suite completa de pruebas unitarias y de integración co
 pytest tests/test_pipeline.py -v
 ```
 
-Cobertura de pruebas:
-* **Validación de Datos:** Prueba de aislamiento de registros incompletos o vacíos vía Pydantic.
-* **Integridad de Salida:** Verificación del contrato estricto de `PaqueteDistribucion`.
-* **Router de LangGraph:** Comprobación del enrutamiento condicional (`generar_caso_exito` vs `generar_faq`).
-* **Seguridad Webhook:** Verificación de rechazo HTTP 401 por cabecera ausente o token erróneo y diagnóstico en `/health`.
+Cobertura de pruebas certificada:
+* `test_lote_crudo_valido_y_rechazos`: Validación de esquemas Pydantic y aislamiento de registros vacíos.
+* `test_esquema_paquete_distribucion_completo`: Verificación del contrato estricto de salida `PaqueteDistribucion`.
+* `test_router_enrutar_caso_exito`: Bifurcación condicional en LangGraph hacia `generar_caso_exito`.
+* `test_router_enrutar_faq`: Bifurcación condicional en LangGraph hacia `generar_faq`.
+* `test_webhook_rechaza_sin_secreto`: Seguridad HTTP 401 Unauthorized sin cabecera de autenticación.
+* `test_webhook_rechaza_secreto_incorrecto`: Seguridad HTTP 401 Unauthorized ante secretos inválidos.
+* `test_health_check_endpoint`: Disponibilidad del servicio en `/health`.
 
 ---
 
-## 📋 Requisitos Cubiertos (Checklist Hackathon 100%)
+## 📄 Contrato de Salida Generado (`PaqueteDistribucion`)
 
-- [x] **Ingestión funcional** validada vía Pydantic (admite lotes crudos y aísla registros corruptos).
-- [x] **Análisis cognitivo multimodelo** con LLM intercambiable (Gemini, OpenAI, Claude).
-- [x] **Generación de 3 activos canónicos:** Post de LinkedIn, Newsletter semanal y Sugerencias FAQ.
-- [x] **Orquestación mediante LangGraph** con estado tipado y router condicional.
-- [x] **Integración con OCI Object Storage** Always Free con validación de lectura inmediata.
-- [x] **Dashboard interactivo en Streamlit** para curaduría, edición y aprobación humana.
-- [x] **API RESTful (FastAPI)** con webhook seguro para ingesta automatizada.
-- [x] **Integración n8n Cloud + ngrok** probada y validada end-to-end con video de demostración.
-- [x] **Suite de pruebas automatizadas (`pytest`)** en `tests/test_pipeline.py`.
-- [x] **Datos de prueba con los 3 casos mínimos** exigidos por el brief del challenge.
+Ejemplo de estructura JSON persistida en OCI Object Storage:
+```json
+{
+  "schema_version": "1.2.0",
+  "status": "exito",
+  "fecha_generacion": "2026-10-03T10:59:16.447120Z",
+  "resumen_comunidad": {
+    "total_interacciones_procesadas": 1,
+    "registros_validos": 1,
+    "registros_rechazados": 0,
+    "sentimiento_predominante": "Muy Positivo",
+    "temas_principales": ["Oportunidad laboral", "Éxito profesional", "Valor de la comunidad"],
+    "alertas_soporte": []
+  },
+  "activos_distribucion_generados": {
+    "post_linkedin": {
+      "titulo": "De estudiante a Dev Jr: La historia de éxito de Mariana que inspira 🚀",
+      "cuerpo": "Hoy queremos celebrar un logro extraordinario...",
+      "canal_recomendado": "LinkedIn Oficial",
+      "potencial_engagement": "Alto",
+      "source_ids": ["linkedin-1791025146950-0"]
+    },
+    "destaque_newsletter_semanal": {
+      "seccion": "Logro de la Semana",
+      "titular": "Mariana Souza consigue su primer trabajo como Dev Jr",
+      "resumen": "Mariana logró ser contratada como Desarrolladora Junior gracias al apoyo...",
+      "source_ids": ["linkedin-1791025146950-0"]
+    },
+    "sugerencia_contenido_faq": null
+  },
+  "control_revision_humana": {
+    "numero_revision": 1,
+    "estado_decision": "pendiente",
+    "revisor": null,
+    "fecha_decision": null,
+    "comentarios": null
+  },
+  "almacenamiento_oci": {
+    "bucket": "communitylab-activos-marketing",
+    "ruta_objeto": "activos/2026-10-03-2026-10-03/paquete-distribucion.json",
+    "status": "guardado_con_exito",
+    "comprobacion_lectura": true
+  },
+  "metadatos_ejecucion": {
+    "modelo": "llm-configurado-via-env",
+    "latencia_ms": 0
+  }
+}
+```
