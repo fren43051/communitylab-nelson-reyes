@@ -71,10 +71,11 @@ La arquitectura integra:
   * Home region real: **`mx-monterrey-1`** (clave `MTY`). Única suscripción `READY`.
   * **`us-phoenix-1` no aplica** a esta cuenta: auth 401 y al intentar suscribir `PHX` → `409 TenantCapacityExceeded` (límite de regiones Always Free).
   * El despliegue en Phoenix del Hito 5 corresponde a otra tenancy/namespace (`axv2uguhheq1`), no a `axl02vwdgmxt`.
-* **OCI Object Storage (pendiente operativo en Monterrey):**
+* **OCI Object Storage (bloqueado por cuota en Monterrey):**
   * Auth API Key OK (`~/.oci/config`, región `mx-monterrey-1`, namespace `axl02vwdgmxt`).
-  * `list_buckets` ve `communitylab-activos-marketing`, pero `get_bucket` / `put_object` / `create_bucket` responden 404/409 (“not exist or not authorized”).
-  * Usuario en grupo Administrators; revisar en consola OCI (región Monterrey) el bucket Always Free y cuotas de Object Storage.
+  * Límites de servicio: `object-storage` → `bucket-count=0`, `storage-bytes=0` (sin capacidad Always Free usable).
+  * Por eso `create_bucket` responde 409 y `get`/`put` 404 aunque `list_buckets` muestre un nombre fantasma.
+  * Acción: en consola OCI (Governance → Limits / Request service limit increase) o verificar elegibilidad Always Free de Object Storage en `mx-monterrey-1`.
 * **Seguridad:** no versionar `.env`, `*.pem` ni secretos de webhook.
 
 ---
