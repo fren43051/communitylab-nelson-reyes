@@ -67,10 +67,14 @@ La arquitectura integra:
 * **Estado Git:** Rama alineada con `communitylab-nelson-reyes` (`main`); `.env` solo local (gitignored).
 * **LLM Anthropic:** `LLM_PROVIDER=anthropic` + `ANTHROPIC_MODEL=claude-haiku-4-5-20251001` — invocación de prueba exitosa (sin 401/403/429).
 * **Pytest:** `7 passed` en `tests/test_pipeline.py` (validación, contrato, router, webhook, health).
-* **OCI Object Storage (pendiente operativo):**
+* **OCI región de esta tenancy (fren43051):**
+  * Home region real: **`mx-monterrey-1`** (clave `MTY`). Única suscripción `READY`.
+  * **`us-phoenix-1` no aplica** a esta cuenta: auth 401 y al intentar suscribir `PHX` → `409 TenantCapacityExceeded` (límite de regiones Always Free).
+  * El despliegue en Phoenix del Hito 5 corresponde a otra tenancy/namespace (`axv2uguhheq1`), no a `axl02vwdgmxt`.
+* **OCI Object Storage (pendiente operativo en Monterrey):**
   * Auth API Key OK (`~/.oci/config`, región `mx-monterrey-1`, namespace `axl02vwdgmxt`).
   * `list_buckets` ve `communitylab-activos-marketing`, pero `get_bucket` / `put_object` / `create_bucket` responden 404/409 (“not exist or not authorized”).
-  * Usuario en grupo Administrators; hay que revisar en consola OCI el estado real del bucket Always Free y cuotas de Object Storage en la tenancy actual.
+  * Usuario en grupo Administrators; revisar en consola OCI (región Monterrey) el bucket Always Free y cuotas de Object Storage.
 * **Seguridad:** no versionar `.env`, `*.pem` ni secretos de webhook.
 
 ---
