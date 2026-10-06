@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "origen_comunidad": "Discord_Grupo_ONE_G10",
+  "periodo_referencia": "demo-faq-langgraph-2026",
+  "interacciones": [
+    {
+      "id": "demo-02-pregunta",
+      "autor": "Diego Ramírez",
+      "canal": "#dudas-langgraph",
+      "tipo": "pregunta_tecnica",
+      "texto": "¿Cómo puedo diseñar un router condicional en LangGraph que reintente una llamada al modelo sin crear un ciclo infinito? Me serviría un ejemplo sencillo.",
+      "metadata_origen": {"plataforma": "discord"}
+    }
+  ]
+}

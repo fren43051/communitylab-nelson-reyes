@@ -89,3 +89,12 @@ La arquitectura integra:
 * **Infraestructura Cloud:** Oracle Cloud Infrastructure (OCI Compute + OCI Object Storage Always Free)
 * **AutomatizaciÃ³n & Contenedores:** Docker, n8n
 * **Testing:** Pytest (100% Passing)
+
+---
+
+## Plan B: resiliencia y curaduria para la demo (2026-10-06)
+* La interfaz Streamlit permite editar LinkedIn, newsletter y FAQ; las ediciones se guardan en el paquete antes de aprobar o rechazar.
+* La salida automatica se persiste como `borrador`; las decisiones humanas se guardan en rutas OCI separadas `aprobado` y `rechazado`. El rechazo exige un motivo.
+* Se agregaron tres fixtures de demo (contratacion, FAQ LangGraph y lote mixto con un registro invalido) y ejemplos few-shot en los cuatro prompts.
+* `_llm_json` reintenta hasta tres veces respuestas fallidas y reporta el error; un fallo de analisis individual queda aislado como pendiente de revision/soporte.
+* Los errores OCI conservan el estado tipado `guardado_error` y exponen el detalle por separado.

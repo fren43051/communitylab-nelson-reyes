@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def subir_paquete_a_oci(paquete_final, periodo_referencia: str) -> dict:
+def subir_paquete_a_oci(paquete_final, periodo_referencia: str, sufijo: str = "borrador") -> dict:
     """
     Sube el paquete de distribucion a OCI Object Storage y relee el objeto para confirmar
     que la escritura persistio correctamente (comprobacion_lectura=True solo si tuvo exito).
@@ -20,7 +20,11 @@ def subir_paquete_a_oci(paquete_final, periodo_referencia: str) -> dict:
     """
     bucket_name = os.getenv("OCI_BUCKET_NAME", "communitylab-activos-marketing")
     namespace = os.getenv("OCI_NAMESPACE")
-    ruta_objeto = f"activos/{date.today().isoformat()}-{periodo_referencia}/paquete-distribucion.json"
+    sufijo_limpio = "".join(c for c in sufijo if c.isalnum() or c in "-_") or "borrador"
+    ruta_objeto = (
+        f"activos/{date.today().isoformat()}-{periodo_referencia}/"
+        f"paquete-distribucion-{sufijo_limpio}.json"
+    )
 
     try:
         import oci
@@ -41,6 +45,7 @@ def subir_paquete_a_oci(paquete_final, periodo_referencia: str) -> dict:
         )
 
         comprobacion_lectura = False
+        detalle_error = None
         try:
             respuesta_lectura = client.get_object(
                 namespace_name=namespace,
@@ -49,20 +54,23 @@ def subir_paquete_a_oci(paquete_final, periodo_referencia: str) -> dict:
             )
             leido = respuesta_lectura.data.content.decode("utf-8")
             comprobacion_lectura = json.loads(leido) == contenido_dict
-        except Exception:
+        except Exception as error_lectura:
             comprobacion_lectura = False
+            detalle_error = str(error_lectura)
 
         return {
             "bucket": bucket_name,
             "ruta_objeto": ruta_objeto,
             "status": "guardado_con_exito" if comprobacion_lectura else "guardado_error",
             "comprobacion_lectura": comprobacion_lectura,
+            "detalle_error": detalle_error,
         }
 
     except Exception as e:
         return {
             "bucket": bucket_name,
             "ruta_objeto": ruta_objeto,
-            "status": f"guardado_error: {e}",
+            "status": "guardado_error",
             "comprobacion_lectura": False,
+            "detalle_error": str(e),
         }

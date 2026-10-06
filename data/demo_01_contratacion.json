@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "origen_comunidad": "Discord_Grupo_ONE_G10",
+  "periodo_referencia": "demo-contratacion-2026",
+  "interacciones": [
+    {
+      "id": "demo-01-logro",
+      "autor": "Lucía Fernández",
+      "canal": "#logros-y-empleos",
+      "tipo": "testimonio",
+      "texto": "Conseguí mi primer empleo como desarrolladora junior. El proyecto de inteligencia artificial que construí durante el programa me ayudó a mostrar mis habilidades en la entrevista técnica.",
+      "metadata_origen": {"plataforma": "discord"}
+    }
+  ]
+}

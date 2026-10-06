@@ -26,7 +26,14 @@ st.title("🚀 CommunityLab — Motor Inteligente de Contenido")
 
 st.sidebar.header("Cargar lote de interacciones")
 archivo = st.sidebar.file_uploader("Archivo JSON", type=["json"])
-usar_ejemplo = st.sidebar.button("Usar datos de ejemplo")
+DEMOS = {
+    "Ejemplo completo": "interacciones_ejemplo.json",
+    "01 — Contratación": "demo_01_contratacion.json",
+    "02 — FAQ LangGraph": "demo_02_faq_langgraph.json",
+    "03 — Mixto e inválido": "demo_03_mixto_invalido.json",
+}
+demo_seleccionado = st.sidebar.selectbox("Demo del jurado", list(DEMOS))
+cargar_demo = st.sidebar.button("Cargar demo")
 
 st.sidebar.divider()
 st.sidebar.header("Identidad del curador")
@@ -39,8 +46,9 @@ if archivo is not None:
     data = json.load(archivo)
     crudo = LoteInteraccionesCrudo(**data)
     lote_validado, rechazados = validar_lote_crudo(crudo)
-elif usar_ejemplo:
-    lote_validado, rechazados = cargar_json("data/interacciones_ejemplo.json")
+elif cargar_demo:
+    ruta_demo = RAIZ_PROYECTO / "data" / DEMOS[demo_seleccionado]
+    lote_validado, rechazados = cargar_json(str(ruta_demo))
 
 if lote_validado:
     st.subheader(f"Comunidad: {lote_validado.origen_comunidad} — {lote_validado.periodo_referencia}")
@@ -61,6 +69,8 @@ if lote_validado:
             resultado = grafo.invoke(estado_inicial)
             st.session_state["resultado"] = resultado
             st.session_state.pop("decision_aplicada", None)
+            for clave in ("titulo_li", "copy_li", "titular_nl", "resumen_nl", "tema_faq", "origen_faq"):
+                st.session_state.pop(clave, None)
 
 if "resultado" in st.session_state:
     paquete = st.session_state["resultado"]["paquete_final"]
@@ -81,22 +91,34 @@ if "resultado" in st.session_state:
     if paquete.activos_distribucion_generados.post_linkedin:
         with st.expander("📱 Post LinkedIn", expanded=True):
             post = paquete.activos_distribucion_generados.post_linkedin
-            st.text_input("Titulo", value=post.titulo, key="titulo_li")
-            st.text_area("Copy", value=post.cuerpo, height=150, key="copy_li")
+            st.session_state.setdefault("titulo_li", post.titulo)
+            st.session_state.setdefault("copy_li", post.cuerpo)
+            st.text_input("Título", key="titulo_li")
+            st.text_area("Copy", height=150, key="copy_li")
+            post.titulo = st.session_state["titulo_li"]
+            post.cuerpo = st.session_state["copy_li"]
             st.caption(f"Engagement potencial: {post.potencial_engagement} | Fuente: {post.source_ids}")
 
     if paquete.activos_distribucion_generados.destaque_newsletter_semanal:
         with st.expander("📰 Newsletter semanal"):
             nl = paquete.activos_distribucion_generados.destaque_newsletter_semanal
-            st.write(f"**{nl.titular}**")
-            st.write(nl.resumen)
+            st.session_state.setdefault("titular_nl", nl.titular)
+            st.session_state.setdefault("resumen_nl", nl.resumen)
+            st.text_input("Titular", key="titular_nl")
+            st.text_area("Resumen", height=100, key="resumen_nl")
+            nl.titular = st.session_state["titular_nl"]
+            nl.resumen = st.session_state["resumen_nl"]
             st.caption(f"Fuente: {nl.source_ids}")
 
     if paquete.activos_distribucion_generados.sugerencia_contenido_faq:
         with st.expander("❓ Sugerencia FAQ"):
             faq = paquete.activos_distribucion_generados.sugerencia_contenido_faq
-            st.write(f"**Tema:** {faq.tema}")
-            st.write(f"**Origen:** {faq.origen}")
+            st.session_state.setdefault("tema_faq", faq.tema)
+            st.session_state.setdefault("origen_faq", faq.origen)
+            st.text_input("Tema", key="tema_faq")
+            st.text_area("Origen", key="origen_faq")
+            faq.tema = st.session_state["tema_faq"]
+            faq.origen = st.session_state["origen_faq"]
             st.caption(f"Fuente: {faq.source_ids}")
 
     st.divider()
@@ -111,15 +133,15 @@ if "resultado" in st.session_state:
         st.caption(f"Comentarios previos: {rc.comentarios}")
 
     comentarios_revision = st.text_area(
-        "Comentarios de revisión (opcional)",
+        "Comentarios de revisión (motivo obligatorio al rechazar)",
         key="comentarios_revision",
-        placeholder="Ej: Ajustar el tono del post de LinkedIn antes de publicar",
+        placeholder="Describe los cambios o el motivo de rechazo",
     )
 
     col_aprobar, col_rechazar = st.columns(2)
 
     with col_aprobar:
-        if st.button("✅ Aprobar y publicar", type="primary", use_container_width=True):
+        if st.button("✅ Aprobar y guardar versión final", type="primary", use_container_width=True):
             if not nombre_revisor:
                 st.error("Ingresa tu nombre o alias en la barra lateral antes de decidir.")
             else:
@@ -128,9 +150,12 @@ if "resultado" in st.session_state:
                     revisor=nombre_revisor, comentarios=comentarios_revision or None,
                 )
                 resultado_oci = persistir_decision_en_oci(
-                    paquete_actualizado, periodo_referencia=st.session_state["resultado"]["lote"].periodo_referencia
+                    paquete_actualizado,
+                    periodo_referencia=st.session_state["resultado"]["lote"].periodo_referencia,
+                    sufijo="aprobado",
                 )
                 st.session_state["resultado"]["paquete_final"] = paquete_actualizado
+                st.session_state["resultado"]["oci_resultado"] = resultado_oci
                 st.session_state["decision_aplicada"] = ("aprobado", resultado_oci)
                 st.rerun()
 
@@ -138,15 +163,20 @@ if "resultado" in st.session_state:
         if st.button("❌ Rechazar", use_container_width=True):
             if not nombre_revisor:
                 st.error("Ingresa tu nombre o alias en la barra lateral antes de decidir.")
+            elif not (comentarios_revision or "").strip():
+                st.error("El rechazo requiere un motivo en los comentarios de revisión.")
             else:
                 paquete_actualizado = aplicar_decision_revision(
                     paquete, estado_decision="rechazado",
                     revisor=nombre_revisor, comentarios=comentarios_revision or None,
                 )
                 resultado_oci = persistir_decision_en_oci(
-                    paquete_actualizado, periodo_referencia=st.session_state["resultado"]["lote"].periodo_referencia
+                    paquete_actualizado,
+                    periodo_referencia=st.session_state["resultado"]["lote"].periodo_referencia,
+                    sufijo="rechazado",
                 )
                 st.session_state["resultado"]["paquete_final"] = paquete_actualizado
+                st.session_state["resultado"]["oci_resultado"] = resultado_oci
                 st.session_state["decision_aplicada"] = ("rechazado", resultado_oci)
                 st.rerun()
 

@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "origen_comunidad": "Discord_Grupo_ONE_G10",
+  "periodo_referencia": "demo-mixto-2026",
+  "interacciones": [
+    {
+      "id": "demo-03-logro",
+      "autor": "Sofía Torres",
+      "canal": "#logros-y-empleos",
+      "tipo": "testimonio",
+      "texto": "Después de practicar con los proyectos de la comunidad, conseguí una oportunidad como desarrolladora backend. Compartir avances y recibir mentoría me ayudó a mejorar mi portafolio.",
+      "metadata_origen": {"plataforma": "discord"}
+    },
+    {
+      "id": "demo-03-pregunta",
+      "autor": "Andrés Vega",
+      "canal": "#dudas-langgraph",
+      "tipo": "pregunta_tecnica",
+      "texto": "¿Qué estrategia recomiendan para guardar el estado de un flujo de LangGraph y retomar el proceso después de un error temporal?",
+      "metadata_origen": {"plataforma": "discord"}
+    },
+    {
+      "id": "demo-03-feedback",
+      "autor": "Valentina Cruz",
+      "canal": "#feedback-cursos",
+      "tipo": "feedback",
+      "texto": "Me perdí durante la configuración del entorno y no pude ejecutar el primer ejemplo. ¿Podrían agregar una guía de solución de errores?",
+      "metadata_origen": {"plataforma": "discord"}
+    },
+    {
+      "id": "demo-03-vacio",
+      "autor": "Usuario Desconocido",
+      "canal": "#general",
+      "tipo": "sin_clasificar",
+      "texto": "   ",
+      "metadata_origen": {"plataforma": "discord"}
+    }
+  ]
+}

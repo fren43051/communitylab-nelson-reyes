@@ -164,6 +164,7 @@ class AlmacenamientoOCI(BaseModel):
     ruta_objeto: str = Field(...)
     status: Literal["guardado_con_exito", "guardado_error", "no_iniciado"] = "no_iniciado"
     comprobacion_lectura: bool = Field(default=False)
+    detalle_error: Optional[str] = None
 
 
 class MetadatosEjecucion(BaseModel):

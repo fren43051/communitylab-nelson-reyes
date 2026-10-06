@@ -26,19 +26,35 @@ from src.prompts.canal_prompts import (
 from src.storage.oci_client import subir_paquete_a_oci
 
 
-def _llm_json(prompt_sistema: str, contenido_usuario: str) -> dict:
+def _llm_json(prompt_sistema: str, contenido_usuario: str, intentos: int = 3) -> dict:
     llm = get_llm()
-    respuesta = llm.invoke([
-        {"role": "system", "content": prompt_sistema},
-        {"role": "user", "content": contenido_usuario},
-    ])
-    texto = respuesta.content.strip()
-    if texto.startswith("```"):
-        texto = texto.strip("`")
-        if texto.lower().startswith("json"):
-            texto = texto[4:]
-        texto = texto.strip()
-    return json.loads(texto)
+    ultimo_error = None
+    for intento in range(intentos):
+        try:
+            respuesta = llm.invoke([
+                {"role": "system", "content": prompt_sistema},
+                {"role": "user", "content": contenido_usuario},
+            ])
+            texto = (respuesta.content or "").strip()
+            if texto.startswith("```"):
+                lineas = texto.splitlines()
+                if lineas and lineas[0].startswith("```"):
+                    lineas = lineas[1:]
+                if lineas and lineas[-1].strip() == "```":
+                    lineas = lineas[:-1]
+                texto = "\n".join(lineas).strip()
+                if texto.lower().startswith("json"):
+                    texto = texto[4:].strip()
+            resultado = json.loads(texto)
+            if not isinstance(resultado, dict):
+                raise ValueError("La respuesta del LLM debe ser un objeto JSON")
+            return resultado
+        except Exception as error:
+            ultimo_error = error
+            if intento + 1 < intentos:
+                time.sleep(0.5 * (intento + 1))
+
+    raise RuntimeError(f"No se pudo obtener JSON válido del LLM tras {intentos} intentos: {ultimo_error}") from ultimo_error
 
 
 def _forzar_string(valor, fallback: str = "") -> str:
@@ -55,12 +71,33 @@ def _forzar_string(valor, fallback: str = "") -> str:
 def nodo_analizar(state: CommunityLabState) -> dict:
     analisis_lista = []
     for interaccion in state["lote"].interacciones:
-        resultado = _llm_json(PROMPT_ANALISIS, interaccion.texto)
-        resultado["puntuacion_relevancia"] = PuntuacionRelevancia(**resultado["puntuacion_relevancia"])
-        analisis_lista.append(AnalisisInteraccion(
-            id=interaccion.id, autor=interaccion.autor, canal=interaccion.canal,
-            tipo=interaccion.tipo, texto=interaccion.texto, **resultado,
-        ))
+        try:
+            resultado = _llm_json(PROMPT_ANALISIS, interaccion.texto)
+            resultado["puntuacion_relevancia"] = PuntuacionRelevancia(**resultado["puntuacion_relevancia"])
+            analisis = AnalisisInteraccion(
+                id=interaccion.id, autor=interaccion.autor, canal=interaccion.canal,
+                tipo=interaccion.tipo, texto=interaccion.texto, **resultado,
+            )
+        except Exception as error:
+            analisis = AnalisisInteraccion(
+                id=interaccion.id,
+                autor=interaccion.autor,
+                canal=interaccion.canal,
+                tipo=interaccion.tipo,
+                texto=interaccion.texto,
+                sentimiento="Neutral",
+                temas=["analisis_no_disponible"],
+                puntuacion_relevancia=PuntuacionRelevancia(
+                    evidencia_explicita=0,
+                    utilidad_comunitaria=0,
+                    claridad_contexto=0,
+                    total=0,
+                ),
+                motivo_seleccion=f"Análisis automático falló; requiere revisión manual: {str(error)[:160]}",
+                categoria_accion="descartar",
+                requiere_soporte=True,
+            )
+        analisis_lista.append(analisis)
     return {"analisis": analisis_lista}
 
 
@@ -146,7 +183,11 @@ def nodo_consolidar(state: CommunityLabState) -> dict:
 
 
 def nodo_guardar_oci(state: CommunityLabState) -> dict:
-    resultado = subir_paquete_a_oci(state["paquete_final"], periodo_referencia=state["lote"].periodo_referencia)
+    resultado = subir_paquete_a_oci(
+        state["paquete_final"],
+        periodo_referencia=state["lote"].periodo_referencia,
+        sufijo="borrador",
+    )
     paquete_actualizado = state["paquete_final"]
     if paquete_actualizado:
         paquete_actualizado.almacenamiento_oci = AlmacenamientoOCI(**resultado)

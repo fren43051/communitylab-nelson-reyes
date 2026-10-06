@@ -5,7 +5,7 @@ re-persistiendo en OCI para dejar registro de auditoria de la decision.
 """
 from datetime import datetime, timezone
 
-from src.ingestion.models import PaqueteDistribucion, HumanReviewControl
+from src.ingestion.models import AlmacenamientoOCI, PaqueteDistribucion, HumanReviewControl
 from src.storage.oci_client import subir_paquete_a_oci
 
 
@@ -32,10 +32,19 @@ def aplicar_decision_revision(
     return paquete
 
 
-def persistir_decision_en_oci(paquete: PaqueteDistribucion, periodo_referencia: str) -> dict:
+def persistir_decision_en_oci(
+    paquete: PaqueteDistribucion,
+    periodo_referencia: str,
+    sufijo: str = "aprobado",
+) -> dict:
     """
     Re-sube el paquete actualizado (con la decision de revision aplicada) a OCI,
     dejando trazabilidad de que la version final incluye la aprobacion/rechazo humano.
     """
-    resultado = subir_paquete_a_oci(paquete, periodo_referencia=periodo_referencia)
+    resultado = subir_paquete_a_oci(
+        paquete,
+        periodo_referencia=periodo_referencia,
+        sufijo=sufijo,
+    )
+    paquete.almacenamiento_oci = AlmacenamientoOCI(**resultado)
     return resultado
