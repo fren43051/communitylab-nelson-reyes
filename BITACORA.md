@@ -63,6 +63,18 @@ La arquitectura integra:
 
 ---
 
+## 📅 Hito 6: Verificación local de credenciales y suite (2026-10-06)
+* **Estado Git:** Rama alineada con `communitylab-nelson-reyes` (`main`); `.env` solo local (gitignored).
+* **LLM Anthropic:** `LLM_PROVIDER=anthropic` + `ANTHROPIC_MODEL=claude-haiku-4-5-20251001` — invocación de prueba exitosa (sin 401/403/429).
+* **Pytest:** `7 passed` en `tests/test_pipeline.py` (validación, contrato, router, webhook, health).
+* **OCI Object Storage (pendiente operativo):**
+  * Auth API Key OK (`~/.oci/config`, región `mx-monterrey-1`, namespace `axl02vwdgmxt`).
+  * `list_buckets` ve `communitylab-activos-marketing`, pero `get_bucket` / `put_object` / `create_bucket` responden 404/409 (“not exist or not authorized”).
+  * Usuario en grupo Administrators; hay que revisar en consola OCI el estado real del bucket Always Free y cuotas de Object Storage en la tenancy actual.
+* **Seguridad:** no versionar `.env`, `*.pem` ni secretos de webhook.
+
+---
+
 ## 🛠️ Stack Tecnológico Integrado
 * **Lenguaje & Entorno:** Python 3.11 / Python 3.14 / uv
 * **Orquestación Cognitiva:** LangChain, LangGraph
