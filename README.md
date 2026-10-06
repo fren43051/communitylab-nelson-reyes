@@ -4,7 +4,7 @@
 [![Orquestación: LangGraph](https://img.shields.io/badge/orquestacion-LangGraph-orange.svg)](https://langchain-ai.github.io/langgraph/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
 [![Oracle Cloud](https://img.shields.io/badge/OCI-Always%20Free-red.svg)](https://www.oracle.com/cloud/free/)
-[![Pytest](https://img.shields.io/badge/pytest-7%20passed-brightgreen.svg)](https://pytest.org/)
+[![Pytest](https://img.shields.io/badge/pytest-15%20passed-brightgreen.svg)](https://pytest.org/)
 [![Docker & n8n](https://img.shields.io/badge/n8n-Docker%20Automated-FF6D5A.svg)](https://n8n.io/)
 
 **Proyecto del Hackathon ONE Grupo 10 (Oracle Next Education & Alura)**  
@@ -14,13 +14,13 @@ Además del modo de ejecución manual (CLI/Streamlit), el proyecto incluye una *
 
 ---
 
-## 🎥 Demostración en Video y Evidencia
+## 🎬 Flujo y Evidencia
 
-El flujo de integración completa fue grabado y verificado en tiempo real:
+El pipeline integra las siguientes capacidades:
 
-* 🎬 **Recorrido: Webhook externo (PowerShell) ➔ Normalización en n8n Cloud ➔ Túnel / Ingress directo ➔ Backend FastAPI ➔ Orquestación con LangGraph + Claude / Gemini ➔ Persistencia en OCI Object Storage (Región Monterrey / Phoenix)**.
-* ☁️ **Evidencia OCI:** Verificación directa en la consola Web de Oracle Cloud del archivo `paquete-distribucion.json` creado en el bucket `communitylab-activos-marketing` (Namespace `axv2uguhheq1`).
-* 🐙 **GitHub / Dark Material:** Pipeline verificado end-to-end con 100% de tests aprobados (`7 passed`).
+* 🎬 **Recorrido:** Ingesta por webhook o Streamlit ➔ validación ➔ LangGraph con bifurcación condicional ➔ generación de activos ➔ revisión humana.
+* ☁️ **Evidencia OCI:** El bucket `communitylab-activos-marketing` (namespace `axv2uguhheq1`, región `us-phoenix-1`) almacena versiones `borrador`, `aprobado` o `rechazado`; cada escritura se verifica con una lectura posterior.
+* 🧪 **Verificación automatizada:** `15 passed`, incluyendo validación de las demos, reintentos y error legible del LLM, aislamiento de fallos por interacción y persistencia OCI simulada en tests.
 
 ---
 
@@ -83,7 +83,8 @@ El flujo de integración completa fue grabado y verificado en tiempo real:
                  │   - VM Compute Always Free (Linux Ubuntu ARM) │
                  │   - Object Storage Bucket:                    │
                  │     communitylab-activos-marketing            │
-                 │   - Objeto: paquete-distribucion.json         │
+                 │   - Objeto: paquete-distribucion-{estado}.json│
+                 │   - Estados: borrador/aprobado/rechazado     │
                  └───────────────────────────────────────────────┘
 ```
 
@@ -111,11 +112,12 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configuración de Variables (`.env`)
-Copia `.env.example` a `.env` y completa tus credenciales:
+Copia `.env.example` a `.env` y completa tus credenciales. La configuración de ejemplo usa Anthropic; también puedes elegir `gemini` u `openai` en `LLM_PROVIDER` y proporcionar la API key correspondiente. No subas `.env` ni claves PEM al repositorio.
 ```ini
 # --- Proveedor de Inteligencia Artificial ---
-GEMINI_API_KEY=tu_api_key_aqui
-LLM_MODEL=gemini-1.5-flash
+ANTHROPIC_API_KEY=tu_api_key_aqui
+LLM_PROVIDER=anthropic
+ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 
 # --- Oracle Cloud Infrastructure (OCI) Object Storage ---
 OCI_CONFIG_FILE=~/.oci/config
@@ -143,10 +145,12 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000
 * **Endpoint Webhook:** `POST http://localhost:8000/api/webhooks/linkedin` (requiere cabecera `X-Webhook-Secret`).
 
 ### Opción B: Panel Interactivo Web (Streamlit)
-Inicia la interfaz de curaduría humana y edición de activos:
+Inicia la interfaz de curaduría humana. El selector ofrece el ejemplo completo y tres demos; puedes editar LinkedIn, newsletter y FAQ, y aprobar o rechazar el paquete. La aprobación y el rechazo requieren identidad del curador, y el rechazo también requiere motivo.
 ```bash
 streamlit run app/streamlit_app.py
 ```
+
+El grafo guarda la salida inicial como `borrador`. Las decisiones humanas crean objetos separados con sufijo `aprobado` o `rechazado`, sin reemplazar el borrador.
 
 ### Opción C: Automatización con n8n en Docker
 El repositorio incluye el flujo oficial exportado en **`docs/n8n_workflow_communitylab.json`**:
@@ -158,10 +162,10 @@ El repositorio incluye el flujo oficial exportado en **`docs/n8n_workflow_commun
 
 ## 🧪 Pruebas Automatizadas (Pytest)
 
-El proyecto incluye una suite completa de pruebas unitarias y de integración construida con `pytest`:
+El proyecto incluye pruebas de contratos, validación, enrutamiento, seguridad del webhook, resiliencia del LLM y persistencia OCI simulada. La última ejecución registrada obtuvo **15 pruebas aprobadas** (incluye casos parametrizados):
 
 ```bash
-pytest tests/test_pipeline.py -v
+python -m pytest tests/ -v
 ```
 
 Cobertura de pruebas certificada:
@@ -172,6 +176,11 @@ Cobertura de pruebas certificada:
 * `test_webhook_rechaza_sin_secreto`: Seguridad HTTP 401 Unauthorized sin cabecera de autenticación.
 * `test_webhook_rechaza_secreto_incorrecto`: Seguridad HTTP 401 Unauthorized ante secretos inválidos.
 * `test_health_check_endpoint`: Disponibilidad del servicio en `/health`.
+* Validación de las tres demos y aislamiento de interacciones inválidas.
+* Reintento ante JSON inválido del LLM, error legible tras agotar intentos y aislamiento de un fallo de análisis por interacción.
+* Verificación de la ruta versionada y lectura posterior OCI con cliente simulado; validación del contrato de error.
+
+Las pruebas de OCI usan un cliente simulado; para verificar credenciales, red y permisos reales, ejecuta una corrida de la aplicación contra tu tenancy.
 
 ---
 
@@ -216,9 +225,10 @@ Ejemplo de estructura JSON persistida en OCI Object Storage:
   },
   "almacenamiento_oci": {
     "bucket": "communitylab-activos-marketing",
-    "ruta_objeto": "activos/2026-10-03-2026-10-03/paquete-distribucion.json",
+    "ruta_objeto": "activos/2026-10-06-demo-contratacion-2026/paquete-distribucion-borrador.json",
     "status": "guardado_con_exito",
-    "comprobacion_lectura": true
+    "comprobacion_lectura": true,
+    "detalle_error": null
   },
   "metadatos_ejecucion": {
     "modelo": "llm-configurado-via-env",
