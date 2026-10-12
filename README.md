@@ -35,74 +35,75 @@ El pipeline integra las siguientes capacidades:
 ## 🏗️ Arquitectura del Pipeline y Almacenamiento Híbrido
 
 ```text
-                  ┌──────────────────────────────────────────────┐
-                  │              FUENTES DE COMUNIDAD            │
-                  │   (Discord, Slack, Foros, Webhooks, LinkedIn)│
-                  └──────────────────────┬───────────────────────┘
-                                         │
-                 ┌───────────────────────┴───────────────────────┐
-                 │                                               │
-                 ▼ (Modo Manual)                                 ▼ (Modo Automático)
-     ┌───────────────────────┐                       ┌───────────────────────┐
-     │  Streamlit UI / CLI   │                       │      n8n Workflow     │
-     │  (Curaduría Humana)   │                       │ (Normalizador eventos)│
-     └───────────┬───────────┘                       └───────────┬───────────┘
-                 │                                               │
-                 │ JSON                                          │ POST (X-Webhook-Secret)
-                 │                                               ▼
-                 │                                   ┌───────────────────────┐
-                 │                                   │    FastAPI Endpoint   │
-                 │                                   │ (/api/webhooks/...)   │
-                 │                                   └───────────┬───────────┘
-                 │                                               │
-                 └───────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                 ┌───────────────────────────────────────────────┐
-                 │         src/ingestion/validador.py            │
-                 │  - Validación Pydantic (LoteInteracciones)    │
-                 │  - Aislamiento de registros vacíos/inválidos  │
-                 └───────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                 ┌───────────────────────────────────────────────┐
-                 │         LANGGRAPH COGNITIVE PIPELINE          │
-                 │                                               │
-                 │             [nodo_analizar]                   │
-                 │       (Extracción Sentimiento + Temas)        │
-                 │                      │                        │
-                 │                      ▼                        │
-                 │           (enrutar_categorias)                │
-                 │                ╱           ╲                  │
-                 │               ▼             ▼                 │
-                 │    [generar_caso_exito]  [generar_faq]        │
-                 │               ╲             ╱                 │
-                 │                ▼           ▼                  │
-                 │            [nodo_consolidar]                  │
-                 │       (Estructura PaqueteDistribucion)        │
-                 │                      │                        │
-                 │                      ▼                        │
-                 │             [nodo_guardar_oci]                │
-                 └──────────────────────┬────────────────────────┘
-                                        │
-                 ┌──────────────────────┴──────────────────────┐
-                 ▼                                             ▼
-  ┌─────────────────────────────┐               ┌─────────────────────────────┐
-  │ 🗄️ ORACLE AUTONOMOUS DB    │               │ 📦 OCI OBJECT STORAGE       │
-  │ - communitylab_interacciones│               │ - Bucket: communitylab-     │
-  │ - communitylab_paquetes     │               │   activos-marketing         │
-  │ - Consultas SQL & Auditoría │               │ - Paquetes JSON inmutables  │
-  └──────────────┬──────────────┘               └──────────────┬──────────────┘
-                 │                                             │
-                 └──────────────────────┬──────────────────────┘
-                                        │
-                                        ▼
-                 ┌─────────────────────────────────────────────┐
-                 │           app/streamlit_app.py              │
-                 │      (Curaduría Humana y Aprobación)        │
-                 └──────────────────────▲──────────────────────┘
-                                        │
-           🔐 [src/config/secrets.py] ◄── OCI Vault (communitylab-secrets)
+                                  FUENTES DE COMUNIDAD
+                       (Discord, Slack, Foros, Webhooks, LinkedIn)
+                                           │
+                 ┌─────────────────────────┴─────────────────────────┐
+                 │                                                   │
+                 ▼ (Modo Manual)                                     ▼ (Modo Automático)
+     ┌───────────────────────┐                           ┌───────────────────────┐
+     │  Streamlit UI / CLI   │                           │      n8n Workflow     │
+     │  (Carga inicial)      │                           │ (Normalizador eventos)│
+     └───────────┬───────────┘                           └───────────┬───────────┘
+                 │                                                   │
+                 │ JSON                                              │ POST (X-Webhook-Secret)
+                 │                                                   ▼
+                 │                                       ┌───────────────────────┐
+                 │                                       │    FastAPI Endpoint   │
+                 │                                       │ (/api/webhooks/...)   │
+                 │                                       └───────────┬───────────┘
+                 │                                                   │
+                 └─────────────────────────┬─────────────────────────┘
+                                           │
+                                           ▼
+                 ┌───────────────────────────────────────────────────┐
+                 │             src/ingestion/validador.py            │
+                 │      - Validación Pydantic (LoteInteracciones)    │
+                 │      - Aislamiento de registros vacíos/inválidos  │
+                 └─────────────────────────┬─────────────────────────┘
+                                           │
+                                           ▼
+                 ┌───────────────────────────────────────────────────┐
+                 │           LANGGRAPH COGNITIVE PIPELINE            │
+                 │                                                   │
+                 │               [nodo_analizar]                     │
+                 │         (Extracción Sentimiento + Temas)          │
+                 │                        │                          │
+                 │                        ▼                          │
+                 │             (enrutar_categorias)                  │
+                 │                  ╱           ╲                    │
+                 │                 ▼             ▼                   │
+                 │      [generar_caso_exito]  [generar_faq]          │
+                 │                 ╲             ╱                   │
+                 │                  ▼           ▼                    │
+                 │              [nodo_consolidar]                    │
+                 │         (Estructura PaqueteDistribucion)          │
+                 └─────────────────────────┬─────────────────────────┘
+                                           │
+                 ┌─────────────────────────┴─────────────────────────┐
+                 ▼                                                   ▼
+  ┌─────────────────────────────┐                     ┌─────────────────────────────┐
+  │ 🗄️ ORACLE AUTONOMOUS DB    │                     │ 📦 OCI OBJECT STORAGE       │
+  │ - communitylab_interacciones│                     │ - Bucket: communitylab-     │
+  │ - communitylab_paquetes     │                     │   activos-marketing         │
+  │ - Consultas SQL & Auditoría │                     │ - Paquetes JSON inmutables  │
+  └──────────────┬──────────────┘                     └──────────────┬──────────────┘
+                 │                                                   │
+                 └─────────────────────────┬─────────────────────────┘
+                                           │
+                                           ▼
+                 ┌───────────────────────────────────────────────────┐
+                 │               app/streamlit_app.py                │
+                 │    (Panel HITL: Curaduría Humana y Aprobación)    │
+                 └───────────────────────────────────────────────────┘
+
+  ═══════════════════════════════════════════════════════════════════════════════════════════════
+  🔐 CAPA DE SEGURIDAD TRANSVERSAL (OCI Vault ──► src/config/secrets.py con Caché en Memoria)
+     ├──► FastAPI Webhook      : Inyecta WEBHOOK_SECRET dinámicamente
+     ├──► LangGraph Pipeline   : Inyecta ANTHROPIC_API_KEY / OPENAI / GEMINI
+     ├──► Oracle Autonomous DB : Inyecta DB_USER, DB_PASSWORD y DB_CONNECT_STRING
+     └──► OCI Object Storage   : Inyecta OCI_CONFIG y OCI_PRIVATE_KEY (o Instance Principal)
+  ═══════════════════════════════════════════════════════════════════════════════════════════════
 ```
 
 ---
