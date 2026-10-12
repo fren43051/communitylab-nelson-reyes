@@ -1,0 +1,56 @@
+﻿{
+    "schema_version":  "1.2.0",
+    "status":  "exito",
+    "fecha_generacion":  "2026-09-23T07:19:54.154103Z",
+    "resumen_comunidad":  {
+                              "total_interacciones_procesadas":  1,
+                              "registros_validos":  1,
+                              "registros_rechazados":  0,
+                              "sentimiento_predominante":  "Muy Positivo",
+                              "temas_principales":  [
+                                                        "LangGraph",
+                                                        "EducaciÃ³n tÃ©cnica",
+                                                        "SatisfacciÃ³n del usuario"
+                                                    ],
+                              "alertas_soporte":  [
+
+                                                  ]
+                          },
+    "activos_distribucion_generados":  {
+                                           "post_linkedin":  {
+                                                                 "titulo":  "De la curiosidad a la maestrÃ­a: la historia de MarÃ­a LÃ³pez con LangGraph",
+                                                                 "cuerpo":  "Hace poco recibimos este mensaje de MarÃ­a LÃ³pez, y no pudimos evitar compartirlo con ustedes:\n\n\"Excelente publicaciÃ³n, me ayudÃ³ mucho a entender LangGraph\"\n\nEstas palabras simples pero poderosas representan exactamente lo que nos motiva cada dÃ­a: transformar conceptos complejos en conocimiento accesible y aplicable.\n\nMarÃ­a es un ejemplo de lo que sucede cuando la curiosidad se encuentra con recursos de calidad. TomÃ³ la iniciativa de profundizar en LangGraph, una tecnologÃ­a fundamental en el desarrollo de aplicaciones con IA, y hoy domina una herramienta que abre puertas a infinitas posibilidades.\n\nEsto es mÃ¡s que un logro individual. Es un recordatorio de que en el mundo tech, el aprendizaje continuo es el superpoder que nos diferencia. Y cuando encuentras la comunidad y los recursos adecuados, los lÃ­mites desaparecen.\n\nA MarÃ­a y a todos nuestros estudiantes: gracias por confiar en nosotros para acompaÃ±arlos en este viaje. Ustedes son la razÃ³n por la que hacemos lo que hacemos.\n\nÂ¿CuÃ¡l es tu prÃ³ximo reto en tech? ð\n\n#TechEducation #LangGraph #AprendizajeContinuo #DesarrolladorIA",
+                                                                 "canal_recomendado":  "LinkedIn Oficial",
+                                                                 "potencial_engagement":  "Alto",
+                                                                 "source_ids":  [
+                                                                                    "linkedin-comment-001"
+                                                                                ]
+                                                             },
+                                           "destaque_newsletter_semanal":  {
+                                                                               "seccion":  "Logro de la Semana",
+                                                                               "titular":  "MarÃ­a LÃ³pez domina LangGraph con nuestra guÃ­a",
+                                                                               "resumen":  "MarÃ­a LÃ³pez compartiÃ³ que nuestro contenido sobre LangGraph fue clave para comprender esta tecnologÃ­a. Un testimonio que confirma el impacto de nuestras publicaciones en la comunidad.",
+                                                                               "source_ids":  [
+                                                                                                  "linkedin-comment-001"
+                                                                                              ]
+                                                                           },
+                                           "sugerencia_contenido_faq":  null
+                                       },
+    "control_revision_humana":  {
+                                    "numero_revision":  1,
+                                    "estado_decision":  "pendiente",
+                                    "revisor":  null,
+                                    "fecha_decision":  null,
+                                    "comentarios":  null
+                                },
+    "almacenamiento_oci":  {
+                               "bucket":  "communitylab-activos-marketing",
+                               "ruta_objeto":  "activos/2026-09-23-2026-09-23/paquete-distribucion.json",
+                               "status":  "guardado_con_exito",
+                               "comprobacion_lectura":  true
+                           },
+    "metadatos_ejecucion":  {
+                                "modelo":  "llm-configurado-via-env",
+                                "latencia_ms":  0
+                            }
+}

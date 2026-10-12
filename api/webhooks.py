@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import ValidationError
 
+from src.config.secrets import obtener_secreto
 from src.graph.build_graph import construir_grafo
 from src.ingestion.models import LoteInteraccionesCrudo
 from src.ingestion.validador import validar_lote_crudo
@@ -22,10 +23,12 @@ GRAFO = construir_grafo()
 
 
 def validar_secreto_webhook(x_webhook_secret: str | None) -> None:
-    secreto_configurado = os.getenv("WEBHOOK_SECRET")
+    secreto_configurado = obtener_secreto("WEBHOOK_SECRET")
 
     if not secreto_configurado:
-        raise RuntimeError("WEBHOOK_SECRET no esta configurado en las variables de entorno")
+        raise RuntimeError(
+            "WEBHOOK_SECRET no esta configurado (ni en OCI Vault ni en las variables de entorno)"
+        )
 
     if not x_webhook_secret or not hmac.compare_digest(x_webhook_secret, secreto_configurado):
         raise HTTPException(

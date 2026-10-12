@@ -3,11 +3,15 @@ Cliente OCI Object Storage (capa Always Free).
 Sube el paquete de activos generado como JSON al bucket configurado y VERIFICA
 la lectura del objeto tras subirlo (comprobacion_lectura), en lugar de confiar
 unicamente en la respuesta de put_object.
+La autenticacion se delega en src.config.oci_auth, de modo que en local usa el
+perfil de ~/.oci/config y en una Compute Instance usa instance principal.
 """
 import os
 import json
 from datetime import date
 from dotenv import load_dotenv
+
+from src.config.oci_auth import construir_cliente
 
 load_dotenv()
 
@@ -16,7 +20,8 @@ def subir_paquete_a_oci(paquete_final, periodo_referencia: str, sufijo: str = "b
     """
     Sube el paquete de distribucion a OCI Object Storage y relee el objeto para confirmar
     que la escritura persistio correctamente (comprobacion_lectura=True solo si tuvo exito).
-    Requiere ~/.oci/config configurado (OCI_CONFIG_FILE / OCI_CONFIG_PROFILE).
+    En local requiere ~/.oci/config (OCI_CONFIG_FILE / OCI_CONFIG_PROFILE); en OCI usa
+    el signer del recurso y no necesita ninguna clave privada en disco.
     """
     bucket_name = os.getenv("OCI_BUCKET_NAME", "communitylab-activos-marketing")
     namespace = os.getenv("OCI_NAMESPACE")
@@ -27,12 +32,9 @@ def subir_paquete_a_oci(paquete_final, periodo_referencia: str, sufijo: str = "b
     )
 
     try:
-        import oci
-        config = oci.config.from_file(
-            file_location=os.path.expanduser(os.getenv("OCI_CONFIG_FILE", "~/.oci/config")),
-            profile_name=os.getenv("OCI_CONFIG_PROFILE", "DEFAULT"),
-        )
-        client = oci.object_storage.ObjectStorageClient(config)
+        import oci.object_storage
+
+        client = construir_cliente(oci.object_storage.ObjectStorageClient)
 
         contenido_dict = paquete_final.model_dump(mode="json") if hasattr(paquete_final, "model_dump") else paquete_final
         contenido = json.dumps(contenido_dict, ensure_ascii=False, indent=2)

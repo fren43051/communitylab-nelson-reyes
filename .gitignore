@@ -16,12 +16,14 @@ ENV/
 .oci/
 *.pem
 *.key
+.secrets/
 
 # IDEs y editores
 .idea/
 .vscode/
 .agents/
 .claude/
+.qwen/
 *.swp
 *.swo
 *~
