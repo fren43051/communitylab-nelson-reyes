@@ -7,7 +7,7 @@
 [![OCI Vault](https://img.shields.io/badge/Security-OCI_Vault_AES--256-blue?style=for-the-badge&logo=oracle&logoColor=white)](https://docs.oracle.com/en-us/iaas/Content/KeyManagement/Concepts/keyoverview.htm)
 [![Autonomous Database](https://img.shields.io/badge/Database-Oracle_Autonomous_DB-orange?style=for-the-badge&logo=oracle&logoColor=white)](https://www.oracle.com/autonomous-database/)
 [![Docker & n8n](https://img.shields.io/badge/n8n-Docker%20Automated-FF6D5A?style=for-the-badge&logo=n8n&logoColor=white)](https://n8n.io/)
-[![Tests Passing](https://img.shields.io/badge/Pytest-39_Passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![Tests Passing](https://img.shields.io/badge/Pytest-47_Passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
 
 **Proyecto del Hackathon ONE Grupo 10 (Oracle Next Education & Alura)**  
 **CommunityLab** ingiere interacciones de comunidades digitales (Discord, Slack, foros, redes sociales, LinkedIn), las analiza y clasifica mediante un modelo LLM orquestado con **LangGraph**, y genera automáticamente activos de marketing listos para publicar (posts de LinkedIn, destacados para newsletter semanal y sugerencias de FAQ).
@@ -284,7 +284,7 @@ El proyecto cuenta con una suite completa de pruebas unitarias construida con `p
 pytest -v
 ```
 
-Cobertura de pruebas (**39 tests pasando**):
+Cobertura de pruebas (**47 tests pasando**):
 * **Validación de Datos:** Aislamiento y filtrado de registros corruptos con Pydantic.
 * **Router de LangGraph:** Bifurcación condicional (`caso_exito` vs `faq`).
 * **Seguridad Webhook:** Validación de cabecera HMAC contra OCI Vault y rechazo HTTP 401.
@@ -306,4 +306,4 @@ Cobertura de pruebas (**39 tests pasando**):
 - [x] **Dashboard interactivo en Streamlit** para curaduría, edición y aprobación humana con trazabilidad.
 - [x] **API RESTful (FastAPI)** con webhook seguro para ingesta automatizada.
 - [x] **Integración n8n Cloud + ngrok** probada y validada end-to-end con video de demostración.
-- [x] **Suite de pruebas automatizadas (`pytest`):** 39 tests unitarios pasando.
+- [x] **Suite de pruebas automatizadas (`pytest`):** 47 tests unitarios pasando.

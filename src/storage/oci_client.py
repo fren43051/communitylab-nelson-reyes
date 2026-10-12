@@ -32,9 +32,22 @@ def subir_paquete_a_oci(paquete_final, periodo_referencia: str, sufijo: str = "b
     )
 
     try:
-        import oci.object_storage
+        import oci
 
-        client = construir_cliente(oci.object_storage.ObjectStorageClient)
+        client = None
+        try:
+            from src.config.oci_auth import construir_cliente
+
+            client = construir_cliente(oci.object_storage.ObjectStorageClient)
+        except Exception:
+            pass
+
+        if client is None:
+            config = oci.config.from_file(
+                file_location=os.path.expanduser(os.getenv("OCI_CONFIG_FILE", "~/.oci/config")),
+                profile_name=os.getenv("OCI_CONFIG_PROFILE", "DEFAULT"),
+            )
+            client = oci.object_storage.ObjectStorageClient(config)
 
         contenido_dict = paquete_final.model_dump(mode="json") if hasattr(paquete_final, "model_dump") else paquete_final
         contenido = json.dumps(contenido_dict, ensure_ascii=False, indent=2)
